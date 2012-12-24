@@ -1,0 +1,82 @@
+[ THIS SECTION IS HIGHLY EXPERIMENTAL, IN DEVELOPMENT AND WILL CHANGE ALMOST FOR SURE ]
+
+Uploader is just a simple lib for uploading files (only pictures actually) to the web server. It can be used for general files upload or just for uploading the pictures, depending on its configuration.
+
+Here are the mandatory configuration parameters which need to be set as a arguments to the class constructor:
+
+session_pictures_key - the main associative array key prefix used in this configuration, it was made to able elastic configuration and usage of multiple simultaeneous uploader instances without any variable names collision, so for uploaded files information will be held in array named this way:
+$_SESSION[$session_pictures_key]["photo_$i"] - where $i is just next natural photo index starting from 0
+session_last_uploaded_key -
+max_pictures - maximum amount of pictures allowed to have loaded in the uploaded object instance, 4 by default
+photo_filename - the name of input field used in the uploading form, it's an index of PHP's superglobal $_FILES[] array
+photo_dir -  destination directory for the pictures (it will be used in the path assembling process (links generation))
+thumb_dir - destination directory for the thumbs (it will be used in the path assembling process (links generation)) 
+
+[ METHODS ]
+
+session_load_pictures(array $pictures)	- loads a set of pictures into the photo uploader object, so it can be edited via the web interface (you can delete/change/add pictures to it). Each array's row represents one picture and contains indexes:
+	photo_path - picture's filename
+	photo_height - height
+	photo_width - width
+	id - database's ID, primary key value from the autoincrement; this is equal to zero for pictures which wasn't saved yet and contains valid id if the picture was loaded from the DB
+
+upload_photo()	-	expects a file being uploaded via POST method, verifies it and saves in the photo_dir, automatically creating thumb with size resulting from scale ratio previously configured as the construct parameter
+returned value - 1 on success, 0 on fail
+When call is successful, you can retrieve last uploaded photo path by calling get_last_uploaded_status(), on error you can obtain this way the error message.
+
+delete_picture($sess_id)	- deletes file corresponding to the $sess_id value (it's just an index of a picture in the pictures set, starting from 0)
+
+flush_pictures() - clears the sess_photos array (a reference to $_SESSION array with pictures metadata)
+
+get_last_uploaded_status()
+
+get_pictures()
+
+get_thumbs()
+get_picture_id($sess_id)
+
+[ USAGE (server side) ]
+
+		require('./lib/photo_uploader.class.php');
+		$this->CNF['session_pictures_key']='account_avatar';
+		$this->CNF['photo_filename']='account_avatar_file';
+		$this->CNF['photo_dir']='img/avatars/';
+		$this->CNF['max_pictures']=1;
+		$this->CNF['session_lat_uploaded_key']='account_uploaded_avatar';
+		$this->CNF['CURR_LIB']='uploader';
+		$uploader=new photo_uploader($this->get_args());	
+		if($uploader->upload_photo())
+		{
+			$this->output.=$uploader->get_last_uploaded_status(); // new pic path
+		}
+		else
+		{	
+			$this->msg($uploader->get_last_uploaded_status()); // error message
+		}
+	  	return 1;
+      default :
+      {
+			$this->msg('VE_UNKNOWN_PARAM');
+			return 0;
+      }
+
+[ USAGE (client side) ]
+
+Here is an example (it doesn't work actually, but maybe you'll figure out some workaround :D):
+
+<form method="post" action="" enctype="multipart/form-data" id="avatar_upload_form">
+	<input type="file" id="account_avatar_file" name="account_avatar_file" /> your fucking avatar, Pete<br />
+	<input type="submit" name="avatar_submit" value="Upload!" id="avatar_submit_button" />
+</form>
+{/foreach}
+<iframe height="100" width="100" id="avatar_upload_iframe">
+	
+</iframe>
+<script>
+function avatar_upload_trigger(e)
+{
+	$("#avatar_upload_form").attr('action',get_link({'action':'update','subaction':'avatar'})).attr('target','avatar_upload_iframe');
+	alert('Set form action to : '+$("#avatar_upload_form").attr('action')+' and target to '+$("#avatar_upload_form").attr('target'));
+}
+$("#avatar_submit_button").click(avatar_upload_trigger);
+</script>

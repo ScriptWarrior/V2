@@ -1,0 +1,42 @@
+[ DATABASE OBJECT README ]
+
+V2::DB object is just a simple, easy to use PDO overlay (lib/db.class.php).
+It's automatically created by the engine, so if you supplied all needed DB information into config/main.conf, you don't have to worry about it.
+Unless you're going to use multiple database connections, you won't be using it directly.
+But just for it to be clear, here's constructor description and sample use.
+Constructor:
+PDODB_wrapper PDODB_wrapper($host,$port,$user,$pass,$dbname,$debug=0)
+example:
+$this->DB=new PDODB_wrapper(DB_HOST,3306,DB_USER,DB_PASSWORD,DB_SCHEMA);
+
+[ Querying the database ]
+mixed PDODB_wrapper::query(string $sql_query,[array $params])
+
+This method is intended for two ways of use; for the INSERT/UPDATE querys, and for fetching the data (SELECTS).
+First parameter is obviously the SQL string, second and optional is an associative array with variable holders, so you DON'T EVER place the variables directly into the string, because THERE WILL BE AN SQL INJECTION BUG. Here are two examples:
+
+int PDODB_wrapper::last_insert_id()
+It's just an overlay on PDO::lastInsertId()
+
+Usage examples:
+INSERT:
+$status=$this->DB->query('INSERT INTO foo (col1,col2) VALUES (:col2,:col2)',array(':col1'=>$some_value,':col2'=>$some_value2));
+SELECT:
+print_r($this->DB->query('SELECT * FROM foo'));
+print_r($this->DB->query('SELECT * FROM foo WHERE id=:id',array(':id'=>$id_variable)));
+
+Of course you should do some logic checks before using user supplied values (such as whether value is an integer, when supplying ids), but whether you do or not, this way (prepared statements, using array of holders) secures the application from the SQL injection attacks (because any user-supplied argument can't change the structure of the statement, cause it's known BEFORE the parameters are binded into the holders). It's strongly recommended to build statements this way, otherwise you probably WILL forget once to do the right checks and sanitizing and you WILL cause an SQL injection. You've been warned. 
+
+If you want to get more information about the PDO holders, please visit http://www.php.net/manual/en/pdo.prepared-statements.php .
+
+Returned value depends on the type of query. For the INSERT/UPDATE and other queries which are not SELECTs, on success 1 is returned, 0 otherwise. 
+For SELECT statements you get back the multidimensional, associative array of database records. Each row corresponds to one record, each row's associative index corresponds to the column name, so it's pretty straighforward and self-explainatory. In the case of failure zero is returned.
+
+int PDODB_wrapper::get_found_rows() - returns the count of rows affected by last executed query.
+
+[ Troubleshooting ]
+
+string PDODB_wrapper::get_err() returns the error information (echoes SQL statement, which caused the error and returns message from the PDO exception). Statement will be echoed automatically if the debug mode is on, which can be enabled by the last, optional parameter in the constructor.
+
+[ Transactions ]
+Still not fixed.

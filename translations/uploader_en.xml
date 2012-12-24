@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_file ln="EN" module="engine">
+	<msg type="info" id="UPLOAD_SUCCESFUL">Upload succesful.</msg>
+	<msg type="error" id="INVALID_REFERENCE">Invalid request.</msg>
+	<msg type="error" id="DELETE_FAILED">Deleting failed.</msg>
+	<msg type="error" id="INVALID_FILENAME">Suspicious filename detected.</msg>
+	<msg type="error" id="UNSUPPORTED_FILE_EXTENSION">Unknown extension.</msg>
+	<msg type="error" id="UNSUPPORTED_FILE_FORMAT">Suspicious file format.</msg>
+	<msg type="error" id="MAX_PHOTOS_REACHED">W tym przypadku można upnąć jedynie 1 zdjęcie.</msg>
+	<msg type="error" id="MOVE_UPLOADED_FILE_FAILED">Nie udało się zapisać pliku w katalogu docelowym, sprawdź uprawnienia oraz system plików.</msg>
+	<msg type="error" id="NO_PICTURE">Nie znaleziono pliku.</msg>
+	<msg type="error" id="INVALID_PHOTO_UPLOADER_CONFIGURATION">Niepoprawna konfiguracja photo uploadera (doc/UPLOADER-README).</msg>
+</message_file>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_file ln="PL" module="engine">
+	<msg type="error" id="VE_SESSION_SEC_ALERT">Próba naruszenia ochrony sesji.</msg>
+	<msg type="error" id="VE_ACCESS_DENIED">Brak dostępu.</msg>
+	<msg type="error" id="VE_DB_WRITE_FAILED">Nie udało się zapisać zmiany w bazie!</msg>
+	<msg type="error" id="VE_INVALID_MAIL_ADDR">Niepoprawny adres email!</msg>
+	<msg type="error" id="VE_UNKNOWN_PARAM">Nieznany parametr.</msg>
+	<msg type="error" id="VE_ENTITY_CORRUPTED">Załadowana z pliku XML definicja encji zawiera błędy.</msg>
+	<msg type="error" id="VE_INVALID_ID">Niepoprawny identyfikator.</msg>
+	<msg type="error" id="VE_VALIDATION_ERR">Niepoprawna wartość.</msg>
+	<msg type="error" id="VE_ENTITY_DEFINITION_NOT_FOUND">Nie można zlokalizować pliku XML z definicją encji.</msg>
+	<msg type="errro" id="INVALID_UPLOADER_CONFIGURATION">Niepoprawna konfiguracja uploadera.</msg>
+	<msg type="error" id="VE_ENTITY_NO_ID">Każdy atrybut encji musi mieć określony przynajmniej attribute_id. Próba załadowania definicji nieudana.</msg>
+	<msg type="error" id="VE_MOD_ENTITY_MISMATCH">Użyta definicja encji nie jest przeznaczona dla tego modułu.</msg>
+	<msg type="error" id="VE_NO_ID_FOR_UPDATE">Nie podano identyfikatora zasobu, który ma zostać poddany edycji, proces przerwany.</msg>
+	<msg type="error" id="VE_NO_ID_FOR_DELETE">Nie podano identyfikatora zasobu, który ma zostać poddany usunięciu, proces przerwany.</msg>
+	<msg type="info" id="VE_OK">OK</msg>
+	<msg type="info" id="VE_LOGOUT">Wyloguj</msg>
+	<msg type="info" id="VE_CREATED_AT">Dodano</msg>
+	<msg type="info" id="VE_NO_RESULTS">Brak wyników.</msg>
+	<msg type="info" id="VE_CONTENT">Treść</msg>
+	<msg type="info" id="VE_YES">tak</msg>
+	<msg type="info" id="VE_NO">nie</msg>
+	<msg type="info" id="VE_TITLE">Tytuł</msg>
+	<msg type="info" id="VE_SAVE">zapisz</msg>
+	<msg type="info" id="VE_EDIT">edytuj</msg>
+	<msg type="info" id="VE_DELETE">usuń</msg>
+	<msg type="info" id="VE_CREATE">dodaj</msg>
+	<msg type="error" id="VE_NO_VALUES">Nie podano żadnych wartości.</msg>
+	<msg type="info" id="VE_DEL_CONFIRM">Usuń - kontynuować?</msg>
+	<msg type="error" id="VE_ENTITY_DB_XML_CONFLICT">Zgodnie z opisem encji jedna z kolumn nazywa się tak samo, jak jeden z predefiniowanych parametrów atrybutu encji (patrz doc/FORMS-LISTERS-ENTITIES-README), nie można kontynuować.</msg>
+	<msg type="info" id="VE_LANG">Język</msg>
+	<msg type="info" id="VE_LANG_INFO">Wybierz język dla tej treści.</msg>
+	<msg type="info" id="VE_LANG_ERROR">Wybrano nieprawidłowy język.</msg>
+	<msg type="info" id="VE_PAGER_LABEL">Idź do strony</msg>
+</message_file>

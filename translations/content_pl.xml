@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_file ln="PL" module="content">
+	<msg type="info" id="CONTENT_INFO">Tu znajduje się treść artykułu/newsa</msg>
+	<msg type="error" id="CONTENT_ERROR">Treść zawiera nieprawidłowe znaki.</msg>
+	<msg type="info" id="TITLE_INFO">Tu znajduje się kilkusłowny opis zawartości.</msg>
+	<msg type="info" id="TITLE_ERROR">Tytuł nie może być pusty, ani dłuższy niż 100 znaków!</msg>
+	<msg type="info" id="INCLUDE_IN_LIST">Uwzględniaj w wynikach wyszukiwania</msg>
+	<msg type="info" id="INCLUDE_IN_LIST_INFO">Wybierz &quot;nie&quot;, aby ta zawartość była pomijana przy przeglądaniu wyników wyszukiwania.</msg>
+	<msg type="error" id="INCLUDE_IN_LIST_ERROR">Nie określiłeś poprawnie, czy ta zawartość ma być dołączana do wyników wyszukiwania.</msg>
+</message_file>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity schema="content" module="content" multiple_savers="no">
+	<attr attribute_id="title" obligatory_create="yes" preg=".{1,100}" class_displayer="content custom_title" search="yes" edit="yes" display="yes" label="VE_TITLE" info="TITLE_INFO" error="TITLE_ERROR" />
+	<attr attribute_id="content"  obligatory_insert="yes" type="text" class_displayer="content" search="yes" edit="yes" info="CONTENT_INFO" label="VE_CONTENT" error="CONTENT_ERROR" display="yes" />
+	<attr attribute_id="created_at"  preg="" class_displayer="content_created_at" search="yes" edit="no" display="yes" label="VE_CREATED_AT" error="" order_by="yes" display_label="yes" insert="no" />
+	<attr attribute_id="ln"  preg="[A-Za-z]{2}" default="polski:PL,english:EN" class_displayer="content language" search="yes" edit="yes" display="no" type="list" label="VE_LANG" info="VE_LANG_INFO" error="VE_LANG_ERROR" />
+	<attr attribute_id="include_in_list"  preg="1|0" default="{$VE_YES}:1,{$VE_NO}:0" search="no" edit="yes" display="no" insert="yes" obligatory_create="no" obligatory_update="no" error="INCLUDE_IN_LIST_ERROR" info="INCLUDE_IN_LIST_INFO" label="INCLUDE_IN_LIST" type="list" />
+</entity>

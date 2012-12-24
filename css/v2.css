@@ -1,0 +1,170 @@
+body {
+	background-color: #000000;
+	color: #ffffff;
+}
+.skeleton {
+	top: 0px;
+	clear: right;
+	margin-left: auto;
+	margin-right: auto;
+	width: 868px;
+}
+.v_info_header {
+	top: 20px;
+}
+div#logo {
+	height: 213px;
+}
+div#logo_left {
+	background-image: url(/img/V2_logo_left.jpg);
+	background-repeat: no-repeat;
+	width: 286px;
+	height: 213px;
+	margin-left: 0px;
+	float: left;
+	clear: none;
+}
+div#logo_middle {
+	width: 208px;
+	height: 213px;
+	margin-left: 44px;
+	float: left;
+	clear: none;
+	background-image: url(/img/V2_logo_middle.jpg);
+	background-repeat: no-repeat;
+}
+div#logo_right {
+	background-image: url(/img/V2_logo_right.jpg);
+	background-repeat: no-repeat;
+	width: 286px;
+	margin-left: 44px;
+	height: 213px;
+	float: left;
+	clear: none;
+}
+div#menu {
+	margin-bottom: 40px;
+}
+a {
+	color: red;
+}
+a:visited {
+	color: red;
+}
+div.menu_position {
+	clear: none;
+	float: left;
+	width: 110px;
+	height: auto;
+	text-align: left;
+	color: red;
+	font-weight: bold;
+}
+div#container {
+	min-height: 500px;
+}
+.stopka {
+	clear: both;
+	text-align: center;
+}
+.v2_menu_link {
+	clear: both;
+	float: left;
+	color: #ffffff;
+}
+/* */
+.tags {	
+	clear: none;
+	color: red;
+	width: 10%;
+	text-align: center;
+	text-decoration: italic;
+}
+#tags_right {
+	float: right;
+	margin-right: auto;
+}
+#tags_left {
+	float: left;
+	margin-left:auto;
+}
+#middle_container {
+	clear: none;
+	float: left;
+	top: 0px;
+	margin-left: auto;
+	margin-right: auto;
+	width: 80%;
+}
+.vform_attribute_container {
+	clear: both;
+	float: left;
+	width: 100%;
+}
+.vform_attribute {
+	clear: none;
+	float: left;
+	margin-left: auto;	
+}
+.vform_attribute_input {
+	width: 80%;
+}
+.vform_attribute_info {
+}
+.vform_attribute_displayer {
+	width: 85%;
+	text-align: justify;
+	margin-left: 5%;
+}
+.vform_attribute_label_hidden {
+	display:none;
+}
+.vform_attribute_saver {
+}
+.vform_trigger {
+	cursor: pointer;
+}
+.vform_trigger_active {
+	font-weight: bold;
+}
+.vform_save_trigger {
+	font-style: italic;
+}
+h1 {
+ font-size:24px;
+}
+h2 {
+font-size:21px;
+}
+h3{
+	font-size:18px;	
+}
+h4{
+	font-size:15px;
+}
+h5{
+	font-size:12px;
+}
+h6{
+	font-size:8px;
+}
+.news_content {
+	text-align: justify;
+}
+.account_signature {
+	clear: none;
+	float: left;
+	text-align: justify;
+	width: 100%;
+}
+.account_avatar {	
+	clear: right;
+	float: left;
+	width: 400px;
+}
+.custom_title {
+	color: red;
+}
+.content_created_at {
+	font-size: 12px;
+}

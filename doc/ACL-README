@@ -1,0 +1,84 @@
+[ ACCESS CONTROL LISTS README ]
+
+[ MAIN CONCEPT ]
+ViLDeV's ACL is quite simple, flexible and powerful architecture (actually I just noticed it is designed with the same rules as ZFS' ACL-s :D). First of all, V2 it keeps all the authorization process in the one place. The main goal is that modules should not/do not need to care about authorization anymore (checking, whether or not someone has required permissions to access certain  module, its use case and related data). Another result of such solution is much smaller code (no need for repeating lines checking current user's permissions, don't repeat yourself) and keeps the application logic separated from the users and groups your system uses, so no need for editing anything if new groups will appear. Each module must have an ACL defined, otherwise it just won't work (actually the engine won't even call it and will return an error instead). There is no allmighty root account at all, like it was in ViLVDeV 1.All administrative roles are evaluated with proper defined ACL-s. If you need some administration group for the user management for instance, you can create additional INSERT into ACL table in account->register() method, so each new user will come with corresponding ACL record allowing specified group to have full control over his account. 
+
+[ WORKING RULE & SYNTAX ]
+First rule is the default policy. If something is not explicitly permitted, it's denied. Simple, logical, secure. Since each module's use case has at least parameters such as module_name and action_name, this is a good base of bulding authorization process. 
+Here is what the ACL records (full list of attributes) table looks like:
+        `aid` INT PRIMARY KEY AUTO_INCREMENT,
+        `mod_name` VARCHAR(20) NOT NULL,
+        `action` VARCHAR(30) NOT NULL,
+        `schema_name` VARCHAR(50) DEFAULT '',
+        `logging_system` TINYINT DEFAULT 1,
+        `acl_res_id` VARCHAR(30) DEFAULT 0, -- FK to any ACL-ed table
+        `acl_uid` INT DEFAULT 0,
+        `acl_gid` INT DEFAULT 0,
+        `csrf_protect` TINYINT DEFAULT 1 
+        
+There is also another level of granulation; per entity's (a record from table aka schema) attribute, if it uses parameter private="yes" in entities/$mod.xml. This makes that specified column private, wich means it's available only to the owner. Regardless to the ACL, additional 'protected' mode is also considered, which would force the displayer/lister V2 section to have its additional ACL for attributes.
+Default deny policy prevents from forgetting to set right the ACL records. If forgotten, related function will refuse to work with 'rule not found' message in the ACL's log.
+
+Each of ACL records is a separate rule telling engine that some particular action called on some particular module (and sometimes with additional conditions, later on that) is permitted to some user/users. So, when an action is performed (let's just assume there's been an 'ebooks' module called with 'list_best' action (so the URL in 'not nice' format looks something like ?module=ebooks&action=list_best.
+When the engine starts processing request, it queries the ACL table for records with mathing mod_name and action name. Also, when the request is pointing to some particular resource (the 'id' parameter is greater than zero), it's taken under consideration in the db query. When the 'acl_res_id' in the ACL is set to the default value (0), all id values in the request are considered as valid. Then, all the records are pulled out and engine starts processing attributes related to user's identity.
+
+There are two methods of defining who is permitted to take an action. First are the acl_uid and acl_gid fields (the external permission given to someone, either a group or a user, but never both in the same ACL record!), which work just the similar way as the unix chmods. This method is used automatically when 'schema_name' atrribute is empty (it's used for the second phase; owner's full control). Then, if both 'acl_uid' and 'acl_gid' values are equal to zero, it is assumed that access to that action on that module and optionally requested id is granted to everyone, so the process returns positive status to the engine. If the 'acl_uid' attribute is equal to current logged users' UID, access is granted. The same with 'acl_gid' and user's GID. 
+
+Second method is the ownership. That's what is 'schema_name' column for. Together with fixed used 'id' for primary key and 'user_id' for owner foreign key it makes possible to simply verify whether or not current user is the resource's owner. This is metadata from  the main table, to which requested action points (let's assume 'ebook' would be fine for the used example, if the 'list_best' action pulls out records from that table). So, instead of just adding proper ACL of 'chmod' type each time a user creates some resource and keep it synchronized, it's more convenient and elegant just to hold the information about DB structure, so a dynamical SQL query can be built to check, whether currently logged user is an owner of the resource called, something like SELECT id FROM $schema_name WHERE user_id=$curr_logged_usr AND id=$requested_resource_id. ViLDeV's ACL assume full owner's control over the resource, so it's sufficient to run requested action and there's no way of changing this behaviour with ACL-s, unless you tamper with the code.  
+
+[ MONITORING ]
+Additional feature is logging. It's quite useful also for debugging and security tracking purposes. Rule is simple: value 1 turns on logging, value 0 turns it off. If requested action is not found or ends with deny, it's always logged, no matter to which value 'logging_system' attribute is set. If action ends with success, it is also logged when 'logging_system' is turned on. This flexibility allows you to easily monitor your users' activity without need to deal with httpd logs, also letting you to avoid filling the database with often-called requests being not of your interest, that's when you turn the logging off. 
+Look at the auth_log table, have fun.
+
+For the efficacy there's been two views created (auth_log_403 and auth_log_404, with the names corresponding to related event type).
+
+[ AN EXAMPLE ]
+
+Let's assume we have ebooks module with ebook table, looking like this:
+book_id	INT
+title VARCHAR(20)
+uploader_id INT
+file_location VARCHAR(200)
+
+We also have the owner (ewilded with uid == 12000), readers group (GID 1000) and the uploaders group (GID 2000).
+
+Module ebook has two methods/actions:
+upload_book (which obviously is intented for the uploaders)
+download_book (which takes an argument; ID and can be used both by the readers and uploaders (and noone else!)).
+
+Now this is what the ACL-s would look like.
+First, let's describe, how to get know about the owner's identity (first rule):
+
+mod_name='ebooks'
+action='download_book'
+schema_name='ebook'
+
+and the rest of attributes set to the default values (0,'' and so on).
+This rule allows the owners and only owners to download books they've uploaded (assuming that the 'upload_ebook' action inserts current user id in the ebook_uploader field).
+
+Now, we're going to let the readers access all the books:
+mod_name='ebooks'
+action='download_book'
+acl_gid=1000
+
+and the rest of attributes set to the default values (0,'' and so on).
+
+We also give this ability to the uploaders:
+
+mod_name='ebooks'
+action='download_book'
+acl_gid=2000
+
+and the rest of attributes set to the default values (0,'' and so on).
+
+So far, so good (three rules are created). Now let's also allow the uploaders to call the upload_ebook action and we're fucking done ;D
+
+mod_name='ebooks'
+action='upload_book'
+acl_gid=2000
+
+and the rest of attributes set to the default values (0,'' and so on).
+
+This is it! Four rules, that's all you gonna need to deploy such authorization scenario. If you'd wanted to extend it somehow (give some permission to another user/group for all the resources accesible by specified action or just some particular ones), you just need to add some new records compatible with the rules stated above. Have fun ;D
+
+BTW: User interface for ACL-s management is still in our magic wishlist.

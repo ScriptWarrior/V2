@@ -1,0 +1,4 @@
+[ USER CLASS ]
+
+get_uid() - returns current UID
+get_gid() - returns array of GID-s (since each user can be member of many groups)

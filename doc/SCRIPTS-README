@@ -1,0 +1,51 @@
+Here is a brief description of files located under /scripts directory.
+
+Here they are:
+
+v2.install.config - this is the only file you should tamper with
+public_html.install.sh - V2 installer - read the [INSTALLER] section
+vildev_update.sh - this small script makes an update of V2 installation from the source branch given as the second param, to the location supplied as the first arg, destination dir is the last one, it's used by the installer, so you don't have to actually worry about it
+
+
+[ INSTALLER ]
+Yes, V2 has installer in bash, if you don't like it, don't use it. It's been designed to be easy and handy both for initial install and upgrading. Actually there's no different mode for installing/upgrading, you just have to run it, but BEFORE you do, make sure it's configured the way that will make it work for you.
+Here are the configuration variables with example (my actually) configuration (v2.install.config):
+
+export PROJECT_NAME=V2
+export VILDEV_PATH=/home/acid/src/PHP/vildev2/
+export PROJECT_SITE_DIR=/home/acid/geeklife_news_v2/
+export INSTALL_DIR=/home/v2/public_html/
+
+Change these values to whatever that corresponds to your directories, a bit of explaination if needed:
+VILDEV_PATH - directory with untared V2 source code
+PROJECT_SITE_DIR - this is where your project files are kept
+INSTALL_DIR - this is usually your DOCUMENT_ROOT (directory where the real website actually resides in, used directly by the webserver)
+
+The main concept is that you keep ViLDeV's source and your own project files separately. When I say your project I mean both your custom HTML templates, CSS stylesheets, images, custom translation XML files and so on, and your own PHP/JavaScript code. The process is quite straightforward:
+- all files from the $PROJECT_SITE_DIR are copied into $INSTALL_DIR and they overwrite anything they meet on their way
+- all files from source directory $VILDEV_PATH are copied into $INSTALL_DIR AND OVERWRITTEN, with the following exceptions:
+	 - files under config/ dir
+	 - file is listed in the $PROJECT_SITE_DIR/V2.INSTALL.IGNORE 
+
+This way you will always have up to date core without loosing existing configuration and files you have customized. So, after you make some changes/replaces in native files from img/, css/ and templates/, which is almost certain, cause you don't want to use my default template, YOU HAVE TO add those files to $PROJECT_SITE_DIR/V2.INSTALL.IGNORE to avoid loosing them while doing upgrade!
+
+If you HAVE CHANGED something in one of the core files, such as index.php, mod_abstract.class.php, lib/*php files or js/v2.js, YOU HAVE TO ADD THEM to $PROJECT_SITE_DIR/V2.INSTALL.IGNORE relatively to you $INSTALL_DIR to get them skipped. However, this is strongly discouraged and should not occur. First of all it takes the risk of resulting in unconsistent installation (broken compatibility). Secondly the more it happens the more feature requests should appear, cause this means V2 is not configurable in some areas (otherwise you wouldn't have to tamper with the source code), so please inform me about such situations. If you put some file in that ignore list, you can always check manually for the changes (either by running git log or diff on the corresponding files) and decide what to do. 
+So, keeping with the example configuration to get the v2.js file ignored, you should add the following line into $PROJECT_SITE_DIR/V2.INSTALL.IGNORE:
+js/v2.js 
+
+
+INSTALLING
+ 
+1. Edit your v2.install.config
+2. run ./public_html.install.sh
+3. Create the MySQL database and user, when done, edit  $INSTALL_DIR/config/main_conf.php with apropriate values (username, pass, dbname etc.) and run:
+mysql -u username -p -D dbname < V2.sql && mysql -u username -p -D dbname < modules.sql && mysql -u username -p -D dbname < acl_setup.sql
+4. Now you can use default account module with it's default action and form to create a user, then you have to activate him manually (active=1 in the user table), now you can log in and use the default modules with default ACLs. If you want anything more, write your own modules and modify ACLs manually, until some administration panel will appear, and it won't be soon.
+
+UPGRADING
+
+1. Backup your v2.install.config
+2. Untar the source into the same/new location, whatever.
+3. Overwrite v2.install.config with your existing conf.
+4. run ./public_html.install.sh
+5. Cry blood trying figure the god damn thing out.

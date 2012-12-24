@@ -1,0 +1,1 @@
+<h2 class="v_info_header">{$error}{$info}</h2>

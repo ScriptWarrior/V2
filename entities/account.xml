@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity schema="user" module="account">
+	<attr attribute_id="email_addr" obligatory_create="yes" obligatory_update="no" preg="(\w+(-|\.)?)*\w+@(((\w+-?)*\w+\.)+\w{2,4})" class_display="account" search="no" edit="no" info="EMAIL_INFO" error="EMAIL_INFO" display="yes" private="yes" insert="yes" />
+	<attr attribute_id="username" obligatory_create="yes" obligatory_update="no" preg=".{0,50}" class_display="account" search="yes" edit="yes" display="yes" info="USERNAME_INFO" error="USERNAME_ERROR" />
+	<attr attribute_id="user_info" obligatory_create="no" obligatory_update="no" preg=".{0,2500}" class_display="account" search="yes" edit="yes" display="yes" info="USER_INFO_INFO" error="USER_INFO_ERROR" />
+	<attr attribute_id="last_logged_at" private="yes" search="no" edit="no" display="yes" label="USER_LAST_LOGGED_AT" info="USER_LAST_LOGGED_AT" />
+	<attr attribute_id="user_avatar" obligatory_update="no" obligatory_create="no" preg="" class_displayer="account" search="no" edit="yes" display="yes" info="USER_AVATAR_INFO" error="USER_AVATAR_ERROR" type="file" />
+	<attr attribute_id="user_pass" obligatory_update="no" obligatory_create="yes" preg=".+" search="no" edit="yes" display="no" insert="yes" private="yes" order_by="no" />
+	<attr attribute_id="created_at" obligatory_update="no" obligatory_create="no" preg="" search="yes" edit="no" display="yes" insert="no" private="yes" order_by="yes" />
+</entity>

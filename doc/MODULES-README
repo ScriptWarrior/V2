@@ -1,0 +1,123 @@
+[ MODULE WRITING HOWTO ]
+
+[ BASIC ARCHITECTURE ]
+Each module is based on the following code:
+
+class <MODULE_NAME> vengine_mod extends vengine_mod
+{
+	<YOU OWN FIELDS AND METHODS>
+  public function engine()
+  {
+		switch($this->REQ->get('action'))
+		{
+			case <ACTION1> :
+			    $this-><ACTION1>();
+			    break;
+			case <ACTION2> : 
+			    $this-><ACTION2>();
+			    break;
+			default :  { $this->display_interface(<MODULE_NAME>); }
+		}
+		return $this->output;
+  	}
+}
+
+The presence of the void <MODULE_NAME>::engine() method is mandatory, action catching switch is only a recommended pattern. You should turn all your use cases (e.g. all functionalities you want to use as a separate module commands) into corresponding methods (private should be fine) and insert them into such switch. After installing a module you have to create at least one entry for each of the actions in the ACL databse (see ACL-README), otherwise action will result with 'access denied' result. This menas you don't have to worry about the authorization process in your module methods. Yes, you don't have to check every time whether user is logged and has enough privileges to take current action, as long as it can be described by the ACL rules system. This results in the safer and shorter code and authorization is just a transparent service provided by the engine. You have to always extend the class with vengine_mod abstract class, which delivers basic module architecture with methods described in this document.
+
+Modules are directly called by the engine, after ensuring sufficient privileges are present, by examining ACL defined for currently called module, action, resource ID and currently logged user information. After new object is created, engine calls init() and passes all it's major objects (see PREDEFINED OBJECTS), then calls the engine() method and expects from it output of the module's taken action.
+
+[ LANGUAGE FILES ]
+Each module should have an XML file with all the labels and messages it uses. To deliver multi-language functionality, you simply create new XML file wih the following convention:
+path: translations/{$mod_name}_{$ln}.xml , where $ln is lowercase abbreviation of language, for example: translations/account_pl.xml
+syntax:
+
+<?xml version="1.0" encoding="utf-8"?>
+<message_file ln="EN" module="mod_name">
+	<msg type="error" id="ID1">content1</msg>
+	<msg type="info" id="ID2">content2</msg>
+</message_file>
+
+Attributes of <message_file> element are not really used (cause information about module name and language is held in the filnename), their just for readability. 
+You can define as many messages as you wish, just remember to give a UNIQUE id attribute value to each of them. There are two types of messages: error and info. Content is simply the content. id is the string you use when calling the msg method. For the above example:
+$this->msg("ID1"); // will display content1
+
+MSG requires additional documentation!
+
+ 
+The way content is displayed depends on currently used output mode (default/AJAX).
+When the AJAX mode is used ($this->ajax==1), $content is put out just like this: <$type>$content</type>, so it's either an info or error XML element. This format is automatically grabbed by the JS part of the V2 and can be displayed in the interface, as the message box and so on. In this mode second, optional parameter is not used.
+When operating in the default mode, msg() method works with cooperation with Smarty. It simply assigns message content with the Smarty holder name, which is passed as the second argument.
+Here is an example:
+$this->msg('ID2','some_message_holder'); // will do Smarty->assign('some_message_holder','content2');
+So it will pase 'content2' string into the 'some_message_holder', when you use sample Smarty template like this:
+<some_html />
+{some_message_holder}
+<some_html />
+The second (holder) parameter is ignored when requests are made by ajax ($this->REQ->get('ajax')==1).
+
+The 'type' attribute of the message is this time silently ignored. If you want to know more about Smarty templates, take a look at http://www.smarty.net/docs/en/language.basic.syntax.
+
+[ TEMPLATE FILES ]
+Template files contain all HTML used in our application. When operating in the default (not AJAX) mode, output is constructed in the following way:
+
+<html>... <!-- main template -->
+	{module_output}
+...
+</html>
+Module's output is just simply the content fetched by the engine() method, the module's output. 
+Module's output is assembled from the module's template file AND values assigned with $this->msg() calls, and if you wish, with direct $this->TPL->assign() calls. The name of template used by the module depends on the parameter supplied to the display_interface() method (see details in DESCRIPTION OF PREDEFINED METHODS), and its default is {$mod_name}_mod.tpl.
+
+You can also change default main template (templates/main.tpl) by overwritting $this->CNF['MAIN_TEMPLATE'] value to something else or using $this->set_main_template($something) method in the modules (path of template used is assembled this way: templates/$this->CNF['MAIN_TEMPLATE'].tpl, so the default value of $this->CNF['MAIN_TEMPLATE'] is 'main'.
+
+[ DESCRIPTION OF PREDEFINED FIELDS ]
+$this->output - is a string ('buffer') of the module's output. All the logic just pastes its output to this variable, which is always returned by the engine() method  after action is performed. You shouldn't write to it directly, except when putting out bunch of XML tags (see $this->array2xmltag()).
+
+[ DESCRIPTION OF PREDEFINED OBJECTS]
+$this->ajax - is just a logical variable, which set depends on the $this->get('ajax') parameter, so the application knows whether current request is an AJAX call, so the engine could create correct output, it's set automatically if you create your links with the way described in this documentation (see CONTROLLER-README, section )
+$this->TPL - Smarty template parser object, you probably won't have to use it directly, $this->msg(), $this->display_interface and engines construct are smooth overlay, with regard to the object itself plase refer to the Smarty official documentation
+$this->USR - holds the information about current logged user and delivers some basic functions used to authenticate/identify (see USR-README for details) 
+$this->DB - database object (see DB-README), it's already connected and ready for executing your queries, you will use it often
+$this->REQ - controller (http request) object, you use it to read parameters supplied by the user with GET/POST requests (see CONTROLLER-README, http_request::link() method)
+
+
+[ DESCRIPTION OF PREDEFINED METHODS ]
+ 
+
+$this->msg($id,$holder='') - see the LANGUAGE FILES section.
+$this->msg_raw($content,$type='info') - it's for putting out additional content, which wasn't defined in the language file. This time you directly pass content into the first parameter. When operating in the default mode, you also supply name of the Smarty holder you wish to paste the content to, when using AJAX you can set the 'type' of the message (default is 'info').
+
+$this->display_interface($mod_name,$template_name='')
+This method just fills all Smarty holders in the template from path templates/{$template_partial_name}_mod.tpl with earlier assigned values and fetches it, so it can be returned as the module output. When using only one template for module, you simply supply the module name as the only parameter. Path of the .tpl file will be assembled automatically (see TEMPLATE FILES for details). But if you want to use more than one template for the module, depending on some action/condition, you can directly pass the exact filename with .tpl extension.
+Examples:
+return $this->display_interface('account'); // returns fetched templates/account_mod.tpl 
+return $this->display_interface('account','vip_account.tpl');  // returns fetched templates/vip_account.tpl
+
+xml_string $this->array2xmltag(string $tagname,array $arr,string $content='') - this method is a handy tool for translating set of SQL fetched records into the set of XML elements of $tag_name, with all columns as the parameters, and optionally some content. Such output can be directly appended to $this->output field, which will be sent by the engine to the browser (in most cases for the AJAX callback, which will use it).
+Examples:
+
+$ar=array(array('id'=>1,'name'=>'Julian'),array('id'=>2,'name'=>'Fakeeyed'));
+echo $this->array2xmltag('person',$arr); 
+will display:
+<person id="1" name="Julian" />
+<person id="2" name="Fakeeyed" />
+
+$ar=array(array('id'=>1,'name'=>'Julian'),array('id'=>2,'name'=>'Fakeeyed'),'higly toxic industrial chemicals');
+echo $this->array2xmltag('person',$arr); 
+will display:
+<person id="1" name="Julian">highly toxic industrial chemicals</person>
+<person id="2" name="Fakeeyed">highly toxic industrial chemicals</person>
+ 
+
+[MAGIC METHODS]
+
+With the designing and implementation of FORMS-LISTERS-ENTITIES (see FORMS-LISTERS-ENTITIES) interface there have been also implemented standard CRUD methods (create,read,update,delete). With proper usage of entities definitions and _standard_autoform.tpl combined with translation file you can easily create full automatically a working module for specified entity without writing anything more then magic method calls and some template preparing lines (just take a look how the news module is composed to have a great example). If they're not specific enough to you, or you have more complicated database structure, you can always write your own CRUD methods, from the scratch or with the special use of magical methods.
+
+Each of them (create, update, delete) has twooptional parameters:
+protected function delete($no_db_write=0,$no_msg=0)
+protected function update($no_db_write=0,$no_msg=0)
+protected function create($no_db_write=0,$no_msg=0)
+search (read) is defined a bit different:
+protected function search($no_db_query=0,$filter=array())
+
+By default those parameters are ommited, however if you want to use them for help in building some more sophisticated use case, you can use no_db_write=1, therefore, instead of performing database operation, they will return the following array: array('sql'=>$sql,'params'=>$values);
+So you don't have to build the SQL query and its parameters from scratch, and you can perform them in your own extension (actually this approach is called the decorator design pattern).

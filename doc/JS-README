@@ -1,0 +1,49 @@
+This is the v2.js documentation.
+
+The main advantage of V2 JavaScript engine is that you don't have to use it. If you don't want to use JS at all, which is also supported, you can even just simply remote all the embedding <script> tags from the main templates to optimize the webbrowser's performance, forget about the whole thing and just use only PHP with Smarty. Otherwise, it gives you some fancy features if you'd like to code some JS, especially if you want to build some part or the whole application on AJAX interfaces. If any of these two is true, then follow me. 
+
+[ MAIN CONCEPT ]
+Whole JS for V2 is coded with usage of the allimighty jQuery.
+
+V2 JavaScript engine is designed with the way enabling you to create fully AJAX application wih continous JavaScript events driven navigation from each part of the webapp to another. This means you're able to create few modules with full JS-driven interfaces and navigate between them without single reload of the whole webapp. If you want to link few module interfaces between themselfes, you should connect up on each module's main template (that one send by smarty, the interface threw out by ViLDeV's display_interface() method) special callbacks, which will let to run them. This will guarantee that the webapp will work regardless of any page refreshes made by the user; if such situation occurs with any template, all callbacks needed to run any other module will be connected up. The key method in the v2.js is the init_mod() method. The best way of explaining this will be an example: 
+
+EXAMPLE HERE
+
+[ METHODS ]
+
+get_link(array strategy_parts) - $this->REQ->link JS counterpart (this method is actually integrated and synchronized through cookie with the current nice url format and variables sequence, called 'strategy' - you can check it yourself by changing the strategy in lib/http_request.class.php -> you do this only in one place, get_link() automatically retrieves current strategry config, so no additional modification on the JS side is needed. You should specify strategy_parts as the parameter. It's an associative array expected to be in format: 'variable_name':'value', for instance:
+ 	get_link({'module':'content','ajax':0}) - returns no-ajax link do module content with default action ('') - which usually displays interface.
+	Prefedined strategy values, such as module, action, ajax etc. are used with default values (from current strategy_config), and overriden with the ones you specify, so you don't have to type this whole chain to get simple link. Actually since there is CSRF protection mechanism build in, you HAVE to use this method for getting links, otherwise they will result in permission denied condition.
+	
+ 
+	
+extract_id(id_string) - this is just a simple overlay on two lines of JS code using regular expression to pull out the number from string such as somename_21343 (so alert(extract_id('somename_21343')) will alert 21343. I used this function a lot while coding multiple-element, complex JS interfaces, to get the DB ID of the element callback was currently triggered against, so I was able to easily perform actions related to the resource specified with this ID previously saved as the HTML id parameter, that's all
+
+There is a general group of functions that are connected directly to the messaging interface: 
+handle_info_response(xml) - displays all the capruted 'info' type messages grabbed from the XML from the jQery's AJAX callback
+handle_error_response(xml) - displays all the capruted 'error' type messages grabbed from the XML from the jQery's AJAX callback
+handle_xml_response(xml) - displays all captured 'error' AND 'info' type messages grabbed from the XML from the jQery's AJAX callback
+handle_xml_response(returnedXMLResponse,error='yes',info='yes') - this is an overlay for two above functions, so calling this on XML AJAX-retrieved object will cause in displaying both 'info' and 'error' type messages in current alerting method (for now it's just native alert() JS method). Optional parameters indicate whether or not the 'error' and 'info' messages send by the engine should be displayed
+  		
+error_handling(XML) - similar to the above, but it grabs the 'error' and 'info' types of messages and displays them with jAlert plugin as an alternative, cent wrote it, so don't ask me about this one ;D
+
+xml_to_array(xmlObject,element_name)
+It's used on the XML object retrieved from the jQuery's AJAX callback, detects all included element_type tags and converts them into associative array, making new row for each ot the encountered elements with each of the attributes as the array's associative index, quite intuitive
+Example:
+ 
+ When the engine send something like this as its output:
+ <?xml version="1.0" encoding="utf-8"?>
+ <response><user id="31337" email_addr="ewilded@gmail.com" username="Julian Horoszkiewicz" user_info="Fanatic" user_avatar="acid.jpg" />
+</response>
+You can simply convert it to array with the following structure: {'id':313374,'email_adr':'acid@ewil.pl','username':'Julian Horoszkiewicz','user_info':'Fanatic','user_avatar':'perl.jpg'} by simply calling:
+var users=xml_to_array(xml,'user')
+users=users[0] // to retrieve only first one
+
+include(source_name) - loads module's JS from js/source_name.mod_js to the current document, it's used by the engine to automtically load modules (with asynchronous AJAX call) when init_mod() method is called
+
+load_template(tpl_name) - performs creation of new Pseudo Smarty object under global MAIN_TPL variable, with templates/tpl_name.tpl template path, which will be loaded automatically when TPL->fetch() is performed for the first time for this template (SEE PSEUDO_SMARTY-README for details), it's used automatically by the core init_mod() method to load current's module main JS-aware template file
+
+destruct() - thiis method is called automatically to make some module-end-call tasks and you shoudln't need to call it directly
+
+init_mod(curr_mod,curr_func,parent_call) -  mod initializer
+validate_value(preg,val,errmsg,method) - client-side validation

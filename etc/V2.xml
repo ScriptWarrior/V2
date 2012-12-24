@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration module="engine">
+	<option id="TAGS_SYSTEM">yes</option>
+	<option id="SITE_NAME">v2.ewil.pl</option>
+	<option id="URI_SEPARATOR">,</option>
+	<option id="DEFAULT_MODULE">content</option>
+	<option id="CSRF_PROTECT">yes</option>
+	<option id="MAIN_TEMPLATE">main</option>
+	<option id="TAGS_SYSTEM_SHOW">yes</option>
+	<option id="PER_PAGE">20</option>
+	<option id="LINK_STRATEGY">module=,action=,id=0,subaction=,page=1,csrf_code=,ajax=0,no_output=0</option>
+	<option id="LINK_SUFFIX">.html</option>
+	<option id="MAX_FILENAME_LENGTH">200</option>
+	<option id="SITE_EMAIL">v2@ewil.pl</option>
+</configuration>

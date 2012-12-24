@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_file ln="EN" module="content">
+	<msg type="info" id="CONTENT_INFO">This is article/news content.</msg>
+	<msg type="error" id="CONTENT_ERROR">Content contains invalid characters or is too long.</msg>
+	<msg type="info" id="TITLE_INFO">This is just a short set of words describing this content</msg>
+	<msg type="info" id="TITLE_ERROR">Ttitle cannot be empty, it cannot be longer than 100 characters neither!</msg>
+	<msg type="info" id="INCLUDE_IN_LIST">Include in search results</msg>
+	<msg type="info" id="INCLUDE_IN_LIST_INFO">Choose &quot;no&quot; to exclude this one from search results.</msg>
+	<msg type="error" id="INCLUDE_IN_LIST_ERROR">You did not specify whether or not this content should be included in list and search results.</msg>
+</message_file>

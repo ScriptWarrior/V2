@@ -1,0 +1,20 @@
+PSEUDO SMARTY
+
+Additionally, beyond the standard, well known Smarty template parser, V2 has its own template parser compatible with most basic set of smarty syntax, but for the CLIENT SIDE. Yes, this means, it's a JavaScript template parser. Why would someone do such a thing? Well, there are at least three good reasons. See PSEUDO_SMARTY-README.
+
+First of all, it let's us to move the effort of assembling data with the template to the client side, so it can be considered as a small performance improvement, but since the biggest part of response time is actually time of database response, this is more a curiosity than practital issue.
+Secondly, it enables us to write server-side app that sends out only pure XML. This output can be easily retrieved by any SOAP client, not neccesarily classical web browser, which in the case of Pseudo Smarty usage is retrieved by AJAX requests (just as the template files are too), converted to associative arrays and automatically filled into template files, then the document is appended by content generated this way. So if you build your module to use Pseudo smarty, there's no need to change SINGLE THING in it if you'd like to use it by other XML capable client too.
+As the last and most important virtue, it's A SALVATION for building complex, adanvced immersive web applications with lots of template programming, like sophisticated forms, multi-level creators, panels and other complicated interfaces. Why? Because you don't keep HTML together with JavaScript no more, it helps you keep your JavaScript code much cleaner! It works the same way as Smarty in PHP, so now when you have to dynamically modify some part of interface containing data, you do it with FOUR lines of code embedded in the AJAX callback:
+$.ajax({url:get_link({'module':'foo','action':'foo_action','ajax':1}),success:function(xml){
+	var data_arr=xml_to_array('entity_name',xml)
+	var TPL=new pseudo_smarty('template_name')
+	TPL.assign('entity_holder_name',data_arr)
+	$("#container_element_id").html(TPL.fetch())
+}})
+
+The main disadvantage of Pseudo Smarty usage is the same as AJAX using disadvantage for displaying data on the website: it won't get indexed by the search engines. That's why the best thing to do is use PHP Smarty for any content you want to get indexed by google, like the articles or news module, at least for the list/show methods. If you code some adminitrative panel with many dependencies and conditional options, much easier and more efficient way is to use pseudo smarty. And if you like to switch between Smarty and Pseudo Smarty in any of the directions, you don't have to rewrite your templates; syntax is the same.
+
+
+One more thing - if you embed JS in your templates, and you sure will (some callbacks connecting for instance) YOU HAVE to always use semicolons (because of the internal Pseudo Smarty's obfuscation, it will screw up JS syntax anyway (it won't be able do distinguish instructions from different lines since there will be no new line indicators anymore in the fetched template))
+
+WARNING: after implementing this I have made some research and discovered that someone else got this idea and implemented it as jqsmarty, which supports CORRECT smarty syntax (I mean if-s ;D), and since pseudo smarty is not widely used it MAY be replaced with jqsmarty.

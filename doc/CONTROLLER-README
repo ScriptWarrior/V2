@@ -1,0 +1,37 @@
+[CONTROLLER DOCUMENTATION]
+
+INTRODUCTION
+Controller is a class (lib/http_request.class.php) intended to avoid direct use of $_POST and $_GET superglobals. It's also used to standardize commands sent to the engine in http request, which enables us to implement efficient and secure Access Control Lists mechanism (see. README-ACL) and control URL format in the centralized way. This means, they way URL looks depends only on the two controller settings - parameter separator and array called strategy. Strategy is a simple array with predefined command/parameter names (i.e. module, action, id, etc.). URL-s for the system are build and used in the following format:
+
+http://DOCUMENT_ROOT/param1$SEPARATORparam2$SEPARATOR... and so on, so URL is splitted with the $SEPARATOR into set of params, which are mapped to the predefined commands with the order defined by the strategy.
+
+With default V2 configuration, sample URL http://v2.ewil.pl/account,login.html means a request to the 'account' module with 'login' action. Rest of the parameters is empty, so they are ommited, but the full equivalent of this URL looks like this:
+http://v2.ewil.pl/account,login,,,,,,.html
+This is because default separator and strategy configuration, which look this way:
+<option id="LINK_STRATEGY">module=,action=,id=0,subaction=,page=1,csrf_code=,ajax=0,no_output=0</option> (etc/V2.xml).
+
+So this is the place when your URL format is configurable (you can always change the order of mapping, so the first argument can be action, id, or however will you change the sequence). You can also change the separator, for example to the dot '.' or a minus char '-', but then beware of using it in some module/action name/other parameter content, cause it will mess up the rest of the sequence in URL and screw up the mapping.
+The same data structure is used for URL-s creation (http_request::link()). This means if you want to change the way URLs look, all you have to do is edit 	<option id="LINK_STRATEGY">module=,action=,id=0,subaction=,page=1,csrf_code=,ajax=0,no_output=0</option> in etc/V2.xml. From this moment URL-s will be GENERATED AND INTERPRETED new way. 
+
+PREDEFINED COMMANDS DESCRIPTION
+
+module - module name to load (generally mandatory, but if not supplied, engine will load it's default module hard-coded in the V2.class.php ($this->CNF['DEFAULT_MODULE']='account';), used by Access Control List
+action - action for the module to perform (optional, each module has default empty action (''), which usually displays it's interface defined in its template (usually templates/$MOD_NAME_mod.tpl), used by Access Control List
+id - id of the resource, for reading, updating and deleting methods (it's used as a resource identifier by the modules), used by Access Control List
+csrf_protection_code - this code is used to secure potentially harmful actions, which change something in the db, for example your password/email. Code is randomly generated and placed in the URL, so no Cross Site Request Forgery attack is possible, it is not used for actions which perform only reading operations (to simplify the process it's only used for each action with 'id' parameter defined, so it will also appear in the links used for reading things unless you disable it with additional parameter for the http_request::link() method (see COMMON METHODS MANUAL))
+subcation - additional command for the module, if needed, used quite rarely
+subpage - number of the current page while browsing result sets
+ajax - this variable is set when the request is perfomed by AJAX call (teoretically there's no need to use nice URLs for AJAX requests, but such architecture ensures code integrity on both sides (client & server)
+no_output - this variable is set if engine should not display any output (usually for sending to the browser files such as PDFs and so on, when module itself sends the Content-Type header and binary content)
+
+[COMMON METHODS MANUAL]
+All of those methods are public and can be used from modules and from the engine by the REQ object (http_request instance) with the following syntax:
+$this->REQ->METHOD(), for example $this->REQ->link(parameters);
+
+string http_request::link(array $URL_params,$csrf_protection=1,$label='',$target='_self') - returns URL consistent with current strategy and separator, with optional csrf_protection, label (<a>content between</a> the 'a' elements) and html target parameter
+
+string http_reuqest::get($command_name) - returns variable mapped from current URL by the COMMAND_NAME, where $command_name has to be on of the predefined commands, otherwise exception is raised
+
+mixed http_request::get_raw($field_name) - returns just direct index from the $_GET superglobal (return $_GET[$field_name]) 
+
+mixed http_request::post($field_name) - similar to above ::get() method, however it's just an $_POST superglobal overlay, no mapping takes place  there actually. Really it's just used to look nice, returns false when requested value was not set.

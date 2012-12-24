@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_file ln="EN" module="account">
+	<msg type="info" id="PASSWORD_CRITERIA">Password cannot be empty.</msg>
+	<msg type="info" id="EMAIL_OBLIGATORY">Please give correct e-mail address!</msg>
+	<msg type="error" id="PASSWORDS_MATCH_ERR">Both passwords have to match!</msg>
+	<msg type="error" id="REGISTER_FAILED">Database write failed, please let us know.</msg>
+	<msg type="info" id="REGISTER_SUCCESFUL">Congratulations, registration succesful, now wait for someone to activate your account.</msg>
+	<msg type="info" id="ALREADY_LOGGED">You're already logged.</msg>
+	<msg type="info" id="EMAIL_INFO">Your e-mail address is your login in this V2 instance.</msg>
+	<msg type="info" id="USERNAME_INFO">Your publicly visible name.</msg>
+	<msg type="error" id="USERNAME_ERROR">Your username cannot be longer than 500 chars.</msg>
+	<msg type="error" id="USER_INFO_ERROR">Your description cannot be longer than 1500 characters.</msg>
+	<msg type="info" id="USER_INFO_INFO">Description is an optional place for additional info about yourself, it can me 500 characters long.</msg>
+	<msg type="info" id="AVATAR_ENTICE_INFO">Upload your fucking avatar</msg>
+	<msg type="info" id="SIGNATURE">Signature</msg>
+	<msg type="info" id="USER_NAME">Username</msg>
+	<msg type="info" id="ACCOUNT_MOD">Profile</msg>
+	<msg type="info" id="USER_LAST_LOGGED_AT">Last logged at</msg>
+	<msg type="info" id="REGISTER_MAIL_TOPIC">Account registration on </msg>
+	<msg type="info" id="THIS_LINK">this link</msg>
+	<msg type="info" id="REGISTRATION_SUCCESFUL_MAIL_SENT">Congratulations! Your account has been sucesfully registered, an e-mail with activation link has been sent to supplied e-mail address. In a case of any trouble or questions please contact us.</msg>
+	<msg type="error" id="TOKEN_ACTIVATION_FAILED">Activation failed, invalid token supplied!</msg>
+	<msg type="info" id="TOKEN_ACTIVATION_SUCCESFUL">Activation succesful, you can now log in!</msg>
+	<msg type="info" id="USRLIST">Users list</msg>
+	<msg type="info" id="E_MAIL">e-mail address</msg>
+</message_file>

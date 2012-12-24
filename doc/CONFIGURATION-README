@@ -1,0 +1,32 @@
+CONFIGURATION-README
+
+V2, so as its libs and modules have their custom configuration names. Currently these are managed through simple xml files, with the following format:
+ <configuration module="account">
+	<option id="REGISTER_EMAIL_CONFIRM">NO</option>
+</configuration>
+
+In this example there's only one option. id has the name, tag itself contains option's current value, everything is enclosed in "configuration" tag with name under "module" parameter. Engine itself, modules and libs share the same associative array, $this->CNF[$option_name]=$value. This array is built automatically from the contents of corresponding XML files, if they are present. Options overwriting is possible; precedence is taken by the last value.
+Let's assume the following etc/V2.xml contents (global settings, will be visible in every module and library, so it's a good place to predefine everything you like):
+
+<?xml version="1.0" encoding="utf-8"?>
+<configuration module="engine">
+	<option id="TAGS_SYSTEM">yes</option>
+	<option id="SITE_NAME">v2.ewil.pl</option>
+	<option id="URI_SEPARATOR">,</option>
+	<option id="DEFAULT_MODULE">content</option>
+	<option id="CSRF_PROTECT">yes</option>
+	<option id="MAIN_TEMPLATE">main</option>
+	<option id="TAGS_SYSTEM_SHOW">yes</option>
+	<option id="PER_PAGE">20</option>
+	<option id="LINK_STRATEGY">module=,action=,id=0,subaction=,page=1,csrf_code=,ajax=0,no_output=0</option>
+	<option id="LINK_SUFFIX">.html</option>
+	<option id="MAX_FILENAME_LENGTH">200</option>
+	<option id="SITE_EMAIL">ewilded@gmail.com</option>
+</configuration>
+
+So, if you have module named foo and create etc/foo.xml file with the following contents:
+ <configuration module="foo">
+	<option id="PER_PAGE">4</option>
+	<option id="SOME_CUSTOM_FOO_OPTION">custom value</option>
+</configuration>
+	PER_PAGE value, which is used by the subpages range generator, will be overwritten both in the foo module and after it finishes, to the last point of engine's execution.

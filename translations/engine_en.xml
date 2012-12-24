@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_file ln="EN" module="engine">
+	<msg type="error" id="VE_SESSION_POISONING_DETECTED">Session attack detected.</msg>
+	<msg type="error" id="VE_ACCESS_DENIED">Access denied.</msg>
+	<msg type="error" id="VE_DB_WRITE_FAILED">Database write failed!</msg>
+	<msg type="error" id="VE_INVALID_MAIL_ADDR">Supplied e-mail address is invalid!</msg>
+	<msg type="error" id="VE_UNKNOWN_PARAM">Unknown paramter.</msg>
+	<msg type="error" id="VE_ENTITY_CORRUPTED">XML entity defitinion is not valid.</msg>
+	<msg type="error" id="VE_INVALID_ID">Invalid id.</msg>
+	<msg type="error" id="VE_VALIDATION_ERR">Invalid value supplied.</msg>
+	<msg type="error" id="VE_ENTITY_DEFINITION_NOT_FOUND">Cannot find XML entity definition file.</msg>
+	<msg type="errro" id="INVALID_UPLOADER_CONFIGURATION">Invalid uploader class configuration.</msg>
+	<msg type="error" id="VE_ENTITY_NO_ID">Each entity attribute has to have at least attribute_id defined. Cannot continue.</msg>
+	<msg type="error" id="VE_MOD_ENTITY_MISMATCH">Entity definition doesn't match current module name.</msg>
+	<msg type="error" id="VE_NO_ID_FOR_UPDATE">Invalid resource name for update process, cannot continue.</msg>
+	<msg type="error" id="VE_NO_ID_FOR_DELETE">Invalid resource id for delete process, cannot continue</msg>
+	<msg type="info" id="VE_OK">OK</msg>
+	<msg type="info" id="VE_LOGOUT">Logout</msg>
+	<msg type="info" id="VE_CREATED_AT">Created at</msg>
+	<msg type="info" id="VE_NO_RESULTS">No reuslts.</msg>
+	<msg type="info" id="VE_CONTENT">Content</msg>
+	<msg type="info" id="VE_TITLE">Title</msg>
+	<msg type="info" id="VE_SAVE">save</msg>
+	<msg type="info" id="VE_EDIT">edit</msg>
+	<msg type="info" id="VE_YES">yes</msg>
+	<msg type="info" id="VE_NO">no</msg>
+	<msg type="info" id="VE_DELETE">delete</msg>
+	<msg type="info" id="VE_CREATE">add</msg>
+	<msg type="error" id="VE_NO_VALUES">No values given.</msg>
+	<msg type="info" id="VE_DEL_CONFIRM">Delete - are you sure?</msg>
+	<msg type="error" id="VE_ENTITY_DB_XML_CONFLICT">According to the entity definition read from the XML file, one of the DB columns is named the same as one of the reserved attribute names (look at doc/FORMS-LISTERS-ENTITIES-README), cannot continue.</msg>
+	<msg type="info" id="VE_LANG">Language</msg>
+	<msg type="info" id="VE_LANG_INFO">Choose language of this content.</msg>
+	<msg type="info" id="VE_LANG_ERROR">Invalid language choosen.</msg>
+	<msg type="info" id="VE_PAGER_LABEL">Go to page</msg>
+</message_file>

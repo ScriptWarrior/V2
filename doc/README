@@ -1,0 +1,77 @@
+V2 README
+
+WHAT IS IT
+V2 is an extremely secure PHP webapp framework written with passion and fun, as a way of learning by synthesis.
+
+ARCHITECTURE
+- MVC-like
+- single point of entry; secure, simple, tight
+- configurable 
+- configurable output; content displayed by modules can be delivered to the Smarty templates or be just formed and sent as XML, also to be used in my interesting and efficient, hybrid JavaScript solution (look at README-PSEUDO_SMARTY)
+- nice, elastic multilanguage support
+- simple, clear and secure architecture, enabling you to easily and safely write modules with as less code as possible, they are also god damn easy and fast to extend if you'd like to add anything
+- prefefined CRUD methods and specific entities definitions in XML files integrated with other parts of the engine make very powerful framework
+
+SECURITY
+Built in:
+- CSRF prevention mechanism
+- Session Poisoning prevention mechanism (based on sha1 checksums of last session content kept in the database, constant starting session template with known checksum, so there's no way of creating fake session from scratch - try it yourself)
+- Session Hijacking hardening (IP+browser info)
+- information disclosure protection mechanisms (like filenames or usernames enumeration issues)
+- full XSS protection (all superglobals are automatically filtered in two first dimensions, deeper levels are just unset, oh well) - as far as i know this simple architectural solution is not implemented in world's most popular web engines according to vast lists of vulnerable plugins
+- SQL inject protection with PDO's variables binding in the DB class (which can be "bypassed" by the module author if he's a pure fucking idiot, I'm still looking for some solution to make it real idiotproof, it would be nice to just overload/undefine/runtime disable some PHP functions, but I didn't find a way of doing this
+- no code execution vulnerable functions used on untainted (superglobals/user supplied) inputs
+- secure file upload library
+- integrated with controller, smart and efficient permissions enforcing system (Access Control List), forces you to define permissions for each particular use case in your modules (see ACL-README), so there's no way of ommiting this; no ACL for action - no permission granted and module is not even loaded by the engine, another virtue of this solution is that you don't have to worry about authorization anymore in your code logic (code is simpler and shorter), you just code particular use cases, and the engine combined with your ACL rules takes care about permitting those actions or not, depending on the resource they are called for and current logged user identity.  As far as I know (and yes, I've made just superficial resaerch) from this http://wordpress.org/support/topic/better-acl post's existance our ACL-s system appears to be better, if not the best
+- introduced additional level of access control granularity, on the entity attribute level - for now there are just private attributes (available only to record's owner), there's also planned additional ACL for attributes with 'protected' mode  
+
+Look into SECURITY-README for details.
+
+Summarizing - it's secure, but as the author I'm not the best person to audit this, that's why hereby we do offer $150 to anyone who finds a SECURITY flaw. To be clear, to get the money you have to find a bug following these rules:
+- it has to be authorization bypass/SQL injection/XSS/Code Execution (eval/shell/file upload)/session poisoning/cross site request forgery/information disclosure vulnerability (for now that's it, no DoS vulnerability reports will be considered in this stage of the challenge - see SECURITY-README)
+- I'm aware of the fact session hijacking prevention is not an ultimate solution when it comes to same NAT/proxy using attacker and victim, still looking for something better, it doesn't count
+- it has to exist in the current source, not be just theoretically possible with intentional action/error of the module programmer, if he follows this documentation
+- predictable user/content id resulting from auto increment is not treated as information disclosure, the same with e-mail masking mechanism (there is no build in spam protection yet and there's no ultimate solution - I'm aware of this and it doesn't count) 
+- data coming from the config files (which are edited manually by you-administrator/module coder) is trusted (considered as untainted); also since all input is sanitized, I automatically assume that data coming from the DB is also sanitized/untainted, because it couldn't get there any other way, so (correct me, if I'm wrong) there's no such thing as "JavaScript XSS" etc, if DB record contains some HTML it means it was allowed to, so I won't admit 'output-XSS' as a vulnerability
+- I know that htmlentities with ENT_QUOTES still allows injection of JS into onEvent attributes, it's covered in the security readme, and here are the details http://pl2.php.net/manual/en/function.htmlentities.php#99896
+- the fact that auto generated input names are the same as database column names is also not information disclosure since there's no SQL injection
+- no behavioral/time based information disclosure (fake error messages bypass) counts
+- error_reporting(E_ALL); is not an information disclosure
+- only one (first) person gets reward for the same bug (reward includes $150 + note in the CREDITS file+v2.ewil.pl news)
+- CHALLENGE STARTS AS SOON AS I WILL BE ABLE TO PAY YOU
+
+PSEUDO SMARTY
+Additionally, beyond the standard, well known Smarty template parser support/usage, V2 has its own template parser compatible with most basic set of smarty syntax, but for the CLIENT SIDE. Yes, this means, it's a JavaScript template parser. Why would someone do such thing? Well, there are at least three good reasons. See PSEUDO_SMARTY-README. I implemented it about a year ago. Few days ago, after some research I've found this http://www.smarty.net/forums/viewtopic.php?t=12343&postdays=0&postorder=asc&start=15 and this project http://balupton.github.com/jquery-smarty/demo/, which is much more sophisticated than my Pseudo Smarty, anyway Pseudo Smarty is nicely integrated with ViLDeV's JavaScript engine and it's made by me, so of course instead of using balupton's lib I'll do my best to improve Pseudo Smarty when such need appears.
+
+All things that need to be done are listed in TODO file, CHANGELOG is no longer maintained since it's redundancy after moving V2 to git.
+
+SITES POWERED BY V2
+dniit.pl
+v2.ewil.pl
+bringit.pl
+admobil.com.pl
+econren.com	[no longer maintained]
+
+
+HOW THIS DOCUMENTATION IS ORGANISED
+You can find particular, detail information about most important project parts in the corresponding files in the doc directory:
+
+VILDEV-VERSION - current version information
+README - this file
+LICENSE - GPLv3 content
+SECURITY-README - READ THIS IMMEDIATELY
+TODO - magical wishlist
+CONFIGURATION-README - etc/*xml files purpose
+MODULES-README - how modules are designed, how to build and use them
+ACL-README - how actually ACL-s work, you have to read this to use any module of your own
+DB-README - how to use our PDO overlay
+FORMS-LISTERS-ENTITIES-README - how all predefined use case methods for modules work and how to make them work for you, this is the most important piece of documentation for programmers just after MODULES-README
+CONTROLLER-README - how the requests processor works, how links are generated and how useful this code is
+JS-README - v2.js documentation, this explains how the JavaScript side of V2 works, if you don't want to use JS in your webapp, you can skip this one
+USER-README - engine's USR object class documentation, nothing interesting actually
+SCRIPTS-README - brief description of the files located in scripts/ directory (actually just the bash 'installer', will be replaced with real installer some day... maybe)
+UPLOADER-README - the uploader class (still in development)
+PSEUDO_SMARTY-README - see this if you code JS a lot
+AUTHORS - who made this
+
+You can always find current version at https://github.com/ewilded/V2 (moved from v2.ewil.pl).

@@ -1,0 +1,65 @@
+FORMS AND LISTERS - ENTITY DEFINITION README
+
+Each entity definition has its own XML file located at ./entities/ dir. Recommended convention is to name them directly as the module name for example. Best example for this is content mod. Its entity descrption file is entities/content.xml
+
+Here's the definition of SQL table for content/article/news/whatever it's called:
+
+  id INT PRIMARY KEY AUTO_INCREMENT	-- PK has to be named id
+  user_id INT		-- FK pointing to resource owner has to be names user_id
+  title VARCHAR(100) DEFAULT ''	-- these are self-explainatory too
+  content TEXT character set utf8 collate utf8_unicode_ci
+  ln CHAR(2) DEFAULT 'PL'
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  
+Here is what the entiy XML looks like. This is responsible for all creation, editing and browsing/searching actions performed by the module using it.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<entity schema="content" module="content">
+	<attr id="content" obligatory="no" preg="" class="content" search="yes" edit="yes" info="CONTENT_INFO" error="CONTENT_ERROR" display="yes" />
+	<attr id="created_at" obligatory="no" preg="" class="content" search="yes" edit="no" display="yes" info="" error="VE_INVALID_DATE" />
+	<attr id="title" obligatory="no" preg=".{0,100}" class="content" search="yes" edit="no" display="yes" inf="TITLE_INFO" />
+	<attr id="ln" obligatory="no" preg="[A-Za-z]{2}" default="PL" class="content language" search="no" edit="no" display="no" />
+</entity>
+
+So, each entity can be defined multiple times (depending on its current use) by one set of attributes. Each attribute is defined by a set of XML attributes, which cover all the details about how to identify the attribute, how to display it, how to handle it, what are its constraints, information about its usage and performing of what particular actions with it is currently allowed. WARNING - NAMES OF THE ATTRIBUTES HAVE TO DIFFER FROM THE COLUMN NAMES used in the db table corresponding to the entity being described. So, all of the following attribute names are RESERVED WORDS in the meaning of naming columns in tables (cause the entity description is automatically merged to each resulting row to make processing more conveniant). Such collisions will be detected and reported as an error, so you won't ommit this detail anyway.
+
+attribute_id - it is the name used both for optional html templates generation and variable names in both POST and GET requests related with create/update/search methods - no default value, this is the only obligatory attribute
+obligatory_create - informs the validate_data function (used for performing massive request validation before allowing to proceed to the desired action), whether or not supplying a value for this attribute is obligatory or optional (default = no)
+obligatory_update - same as above, but for update predefined method
+class_displayer,class_input,class_saver - used for CSS purpose when generating templates, JS callbacks and so on, many space separated classes can occur, just as in CSS, cause this is wha it's for (default = "")
+preg - a perl regular expression used by the validation method to check wether value fits into intended range (for use both on the client and server side), ommitted when empty (default = "")
+display - whether or not display this value in the search/show methods (default = "yes"), this actually means that this variable will not be available in the show and list methods, THIS DOESN'T MEAN IT WILL NOT BE AVAILABLE TO READ, it'll just not be set to visible in HTML, so, once again: THIS OPTION DOES NOT DELIVER ANY FORM OF SECURITY, IT'S A COSMETIC THING ONLY - some parameters need to be controlled by the user, but should not be displayed as the general content, and this setting is made for those cases, if you want a table column not be involved in the whole CRUD process and interface generating,  you simply ommit it while defining entities/$MODULE[_$ACTION].xml file, if you want it to be private, you set private="yes"
+default - default value for generating forms for resource creation, default value to use as search criteria if not supplied (not necessarily for inserting, when doing insert, empty value will be just ommited if it was not obligatory and the DB system will use its default value for it, usually it's good idea to use the same value here as the default in the DB, it is used for auto-generated form initialization and not to set the value in update/create if user ommits it, it will be skipped then if it's not obligatory in this case (default=""). When type is set to "list" it contains either:
+	- fixed list of parameters, which are directly translated to <select><option>...</option>...</select> tag, with the following format:
+		parameter1_name:value1,parameter2_name:value2,...  when the one you want to be selected as default is actually the first one, that's it
+		You can use here multilang variables from translations XML files with the same syntax as in the templates, for example:
+		default="{$VE_YES}:1,{$VE_NO}:0" 
+	- otherwise it's a reference to some database table, it contains reference to that entity definition (and the latter is NOT IMPLEMENTED YET, so I'm not documenting here the syntax now)
+info - this is just an associative index (for the $this->MSG system array, see the MODULES-README, [LANGUAGE FILES] section for more details) for the information message displayed for this entity (just a short information of the variable purpose and expected format) default="VE_OK"
+error - same as above, but for the general validation message, related to expected format or other constraints default="VE_VALIDATION_ERR" 
+search - whether or not use this value as the criteria for the predefined search() method, default = "yes"
+edit - whether or not this attribute can be set with create/edit methods, if set to "no", they just silently ignore it, default = "yes"
+insert - whether or not user is able to set this value while inserting (with create() method), this is similar to edit, but it involves only  create, no edit actions, this is needed for values that are set once and never edited, like a login (e-mail addr in V2's default account mod as an example), default="yes"
+private - setting this to 'yes' prevents from displaying this or using this attribute in the filters by any other users than the owner, default="no"
+order_by - whether or not use this attribute for sorting listing results, possible values: 'yes','on_demand','no'. 'yes' means that the corresponding column will be automatically added as a parameter to the 'order by' SQL clausule, usually only one attribute has this set to 'yes'. 'on_demand' means that the column is sortable, if it appears in the $filter['order_by'] criteria array supplied as the second argument to predefined search() method. If any of the 'on_demand' parameters is used, any parameter with predefined 'order_by'='yes' feature automatically becomes set to 'order_by'='on_demand'. The order of order by columns used in the 'order by' clausule corresponds to the order of sequence they appear in the $filter['order_by'] array. default="no"
+type - this helps the FORMS part to generete proper form elements (textareas instead of "text inputs", set this to "text" to get textarea, left default to get text input, set this to "list" to get a select (selects are not implemented yet), "file" for file uploads (not supported yet), "photo" for photo uploads. default="" (text input with <input> tag is generated).
+label - this is an associative index for MSG array with attribute's label/displayed name, default=""
+constraint -  this is for some more sophisticated conditions programming, with basic expressions syntax, such as !=,==,>,<,=>,<= and attribute names prefixed with @ and  constants allowed	(this is currently not implemented, wait for rev 03)
+
+Default values are for conveniance, so we can just specify those which differ from default, it's less to write. 
+
+Attributes id and user_id are used by the ACL system for the authorization purpose so their policy cannot be overriden with the entity attributes definitions.
+
+Additonal entity attribute, "module", points to the module name entity should be used with. "schemata" contains just the name of the DB table/view used to generate SQL queries in the predefined show/search/create/update/delete methods. "multiple_savers" attribute is used by forms generator to make a decision whether or not create separate "save" trigger for each attribute or just one for the whole entity. It also tells the predefined update() method to allow create update statements by accepting and changing only one instead of the whole set of parameters. default="no".
+
+create()
+update()
+delete()
+search($no_db_query=0,$filter=array())
+show()
+
+These five predefined methods (you can find them in mod_abstract.class.php) are automatically using the entity definiton file tighten to current module and optionally entity name if supplied (by default the entity name is assumed to be the same as the module name). So, all you have to do is just call them from  your module with the help of previously generated form. You can generate new form template by just calling $this->generate_entity_form($action) method. This will speed up the process of assembling new module. That's all what I got for now.
+
+Fields identifying foreign entities (foreign keys in general), mostly used for generating the "select" inputs are not implemented yet, but probably they will be made of simple sets of metadata describing location of the corresponding entity definition, so the whole server side query and corresponding ajax link can be generated automatically.
+
+Because of _standard_autoform.tpl internals and get_entity_rules() implementation YOU CAN NOT USE colum names named the same way as the XML attributes.

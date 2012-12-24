@@ -1,0 +1,73 @@
+"(...) When our masterpiece is complete and the coroner's report is back in, it will read the cause of death: ART (...)"
+
+TODO
+
+[CURRENT]
+- file_download special module [DONE, NOT TESTED]
+- upload class (code + documentation)
+- security audit made by someone else (i'll just offer some money to anyone, who finds a bug (XSS,SQL,CODE EXECUTION,CSRF!,SESSION_POISONING), i have a big chance to audit it for free :D) (once again check everything, write unit tests?)
+
+[MAJOR]
+- [ARCH] introduce plugins (cent suggests the following sections: extensions, libs, modules, so we'll add extensions (plugins) architecture
+- [ARCH] proposed extensions: HTML ext, MENU, ext, PAGIN ext (it's mod_abstract part currently), LANGUAGE ext, DB ext, CNF ext i TPL ext (how would that look like), cents wants: forms generator, cliend-side validation (these are already built in _standard_autoform.tpl <-> mod abstract - get familiar with it)
+- [ARCH] menu extension - can be statically built or fetched from the DB
+- [ARCH] pagin extension - built into mod_abstract, extract it and embed back if you want, so it will be useful anywhere else, anyway - it's in the mod abstract, so it IS ready to use anywhere, we can just link it as 'extension'
+- [ARCH] lang extension - MSG suggests messages, but there is a need for static content ($this->LNG->TXT, $this->LNG->GUI etc)
+- [ARCH] cent wants to introduce wrappers for external, non-V2 libraries as libs - oh, then we're talking about two different things; so called libs are currently object built the same way modules are (can have own config and messages), but cannot be requested directly through the controller and are not comprised by the authorization system, so I would just create a wrapper lib in this architecture and clone it for wrapping each external lib, like phpmailer, GeSHI) 
+- [ARCH] cent wants to introduce the following libs: payment, gallery, tags
+- check ACL flaw reported by cent ;D
+- it would be nice to add preloader to account (profile) edition panel + there are issues with CSRF protection when saving more than one time
+- add categories support
+- code some menu system
+- introduce DB/xml based modules confguration through administration panel (XML-s should be ok)
+- add _custom messages and configs file instead of ignore list, this will solve the new features and messages problem (compatibility)
+- add filters (categories + keywords + search) + permissions management panel - beware of information disclosure + lister (search) filter interface implementation (simple filter = GET, sophisticated = POST or just somehow separated)
+- entity-lister support
+- move tags to 'plugins/extensions' group - these are just sets of apps executed after succesful module load - each set is ascribed to module[,action[,id]] combination, so there's no need to use ACL-s on them, they won't load for the 'error' mod anyway
+- documentation (JS,ENGINE (engine, mod_abstract,modules-readme)), reserved column names and so on
+- admobil's/bringit's modifications? (cent's fork)
+- multiple entities per mod+action support (cent's hint)
+- e-mail addr  and other sensitive information anti spam masking (with help of JS)
+- constraint magic XML attribute implementation - code table relations
+- installer
+- Keywords - table for keywords + table for relating them with items, fast search
+- administration panel for ACL-s and logs
+- administration panel for installing/managing modules
+
+[FIXES]
+- modify SQL statements creation so the column names will be quoted to avoid collisions with reserved RDBMS words, like day_second
+- make some workaround for XML's CDATA for f**k sake! (change format of outputted XML - don't use attributes, use values - lots of work)
+- test session mechanism behaviour in different situations
+- extend JS bbcode - make our own, simple WYSIWYG
+- deny empty session ids
+- look at fake ID's passed by ACL - is this really a problem? it makes module to load, I don't like it 
+- what if user deletes himself (no force logout, I don't want to fight with zombie users)
+- after add there's no id retrieval, which results in another addition instead of update
+- two OK-s after create - why (global and dedicated callback issue)
+- saving success/fail indication integrated with auto forms
+- it would be nice to have the ability to create also custom attrs configuration per id, not only for the whole entity
+- add iframe to _standard_autoform.tpl to support uploader integration (cent made it I think)
+- Pseudo Smarty ifs compatibility and other fixes if possible/change to jqsmarty
+- Categories - descendant structure (parent - child) - recurrent SQL function 
+- Related lists - entity attribute with some @reference to another entity
+- more metadata about the modules in the database (titles, labels)
+- DB transactions support	
+- fix DB PDO transacitons
+- CNF -> XML automatic conversion for the V2 JS engine (isn't this already done?)
+- virtual modules with different ACL-s which make aliases (vmod,vaction,id - > entity+module mapping)
+- fix the error message delivery (it doesn't reach everywhere; example: photo_uploader construct
+
+[LEAST IMPORTANT]
+- firewall (whole neostrada block + mandatory MSIE in uastring)
+- consider introducing automatic auto_increments substitute -> some rand string mapping to avoid 'information disclosure'
+- multiple databse servers support
+- protected entity attribute support
+- 	google tags manager
+-	extended account customization (additional user profile features, such as groups management)
+-	comments for resources
+-	gallery
+-	rewrite pseudo smarty/replace it with jQsmarty
+
+[ OTHER IDEAS ]
+FORMS-LISTERS - we could use 'conflicting' columns to overwrite default entity attributes definitions from XML files, it would give a great level of configurability. We can just prefer the values that are not empty instead of running array_merge. This could be achieved with some magical JOIN in prefefined methods with some dedicated config table.
+kl3ryk said it would be nice if we made feature of connecting up custom code for some event-conditions, like pre-routing, pre-module run, after module run and so on (just like hooks in wordpress for instance).

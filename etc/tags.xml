@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration module="tags">
+	<option id="SIZE_CLASSES">h1,150;h2,100;h3,70;h4,50;h5,30;h6,10</option>
+	<option id="RESTRICT_LANG">no</option>
+	<option id="MIN_INSERT_DELAY">30</option>
+	<option id="VALID_TAG_REGEX">[\w\. ]{3,25}</option>
+	<option id="CSRF_PROTECT">0</option>
+	<option id="MAIN_TEMPLATE">main</option>
+	<option id="TAGS_SYSTEM_SHOW">yes</option>
+</configuration>

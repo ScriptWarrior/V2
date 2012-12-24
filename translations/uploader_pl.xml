@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_file ln="PL" module="engine">
+	<msg type="info" id="UPLOAD_SUCCESFUL">Z powodzeniem wysłano plik na serwer.</msg>
+	<msg type="error" id="INVALID_REFERENCE">Nieprawidłowe odwołanie.</msg>
+	<msg type="error" id="DELETE_FAILED">Usuwanie nie powiodło się.</msg>
+	<msg type="error" id="INVALID_FILENAME">Abuserska nazwa pliku.</msg>
+	<msg type="error" id="UNSUPPORTED_FILE_EXTENSION">Nieznane rozszerzenie.</msg>
+	<msg type="error" id="UNSUPPORTED_FILE_FORMAT">Abuserski format pliku.</msg>
+	<msg type="error" id="MAX_PHOTOS_REACHED">W tym przypadku można upnąć jedynie 1 zdjęcie.</msg>
+	<msg type="error" id="MOVE_UPLOADED_FILE_FAILED">Nie udało się zapisać pliku w katalogu docelowym, sprawdź uprawnienia oraz system plików.</msg>
+	<msg type="error" id="NO_PICTURE">Nie znaleziono pliku.</msg>
+	<msg type="error" id="INVALID_PHOTO_UPLOADER_CONFIGURATION">Niepoprawna konfiguracja photo uploadera (doc/UPLOADER-README).</msg>
+</message_file>

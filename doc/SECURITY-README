@@ -1,0 +1,185 @@
+[SECURITY PROBLEMS & SOLUTIONS]
+(This content is also covered in this http://lug.opole.pl/materialy/V2.odp presentation).
+
+This chapter briefly describes all security problems I have distinguished along with solutions implemeneted in V2.
+The main goal of V2 architecture is to move as much of the security layer as possible to the engine (which is the only, SINGLE POINT OF ENTRY/INPUT), instead of modules.
+Advantages:
+- simpler, shorter modules code
+- assurance that every single security layer is always executed
+
+Disadvantages:
+	- awareness of the fact the security is provided by the engine, a module programmer could deceptively think that nothing bad can happen, which is simply not true, since if he really tries hard to do something stupid, like using mysql_query instead of V2's DB object, or using its query() method with parameters directly pasted in the query rather than supplying holder->parameter mapping array, or calling some eval($_POST['code']); shellexec($_GET['anything']) and so on, it WILL NOT BE PREVENTED BY V2 (since any kinds of making out sets of rules like regular expressions to detect and consider as malicious contents with PHP/SQL/shell code is a race in which we are always on the lost position. Unless ... we implement default strict filtering  with opposite policy - evertything must pass ^\w+$ regular expression (unset otherwise) with only small set of specified exceptions (in form module-action-variable - this option is still considered, making attacks like SQL injection and most of Code Execution variants totally impossible). But this kind of filtering is now only considered, not implemented. Summarizing - as long as the module programmer has the ability to write PHP code and use database connection/upload files, there's always some sabotage option, V2 just narrows those possibilities as much as possible. At least that's the main goal.  
+
+[Flaw types & protection methods]
+
+XSS/HTML injection
+
+To avoid injection of HTML with any input variable, V2 uses its sanitize_input() method before using any of those variables. To be sure no HTML is delivered with variables controlled by the user ,all superglobals except $_SESSION (both values and keys) are filtered with htmlentities() PHP function in first two dimensions, third dimension is just unset. It was previously written with recurrence, now it's not, but I don't see the need to use more than two dimensions in all these superglobals (exception from this is $_SESSION, but it's not filtered with htmlentitiess() since it's secured with other mechanism and the level of dimensions is unrestricted). They ALL need to be filtered, even if it might look that filtering only $_GET with skipping $_GLOBALS['HTTP_GET_VARS'] and $HTTP_GET_VARS is sufficient, but it's not, since they're not references, they're COPIES. Here's the full list:
+   * $GLOBALS
+   * $_SERVER
+   * $_GET
+   * $_POST
+   * $_FILES
+   * $_COOKIE
+   * $_SESSION
+   * $_REQUEST
+   * $_ENV 
+	 $HTTP_RAW_POST_DATA
+	 $http_response_header - why not
+	 ALL values and keys are htmlentities filtered.
+	 php://input is not filtered, since it's read only
+	 
+	 
+
+It's good to know that using htmlentities doesn't protect us from XSS entirely, as you can find out here: http://pl2.php.net/manual/en/function.htmlentities.php#99896
+The safest way is to use ENT_QUOTES option (and so does V2) and keep in mind, that JavaScript injection into event attributes like onLoad is still possible, as shown in the example:
+echo "<element onLoad='$user_supplied' />"; 
+where $user_supplied='javascript:evil_code()'.
+
+SQL INJECTION
+
+Since filtering like mysql_escape_string or casting to int are not complete and certain securying mechanisms (at least the second one cannot be automated easy/civilized way), V2 doesn't use them. Instead, V2's DB object (which is just a PDO overlay) uses its parametrized queries, where parameter binding (like $this->DB->query("SELECT * FROM foo WHERE bar=:bar",array(':bar'=>$this->REQ->post('bar'))) IS MANDATORY. I see this method as far more simple to use and quite safe, since I didn't meet any case of working this around. It seems quite reasonable, since the holders make SQL statement structure to be known BEFORE the parameters are injected, so it's not possible to change statement's structure with any parameter value. If someone uses this method without any holder (no ':' is found in the statement), beyond the parameters, third argument "$im_not_that_stupid" (which is default 0) has to be passed to be sure someone's aware what he's doing (since its possible statements with no variables passed will be used too), otherwise query will fail and exception will be raised. OF COURSE if someone just writes something like this:
+$this->DB->query("SELECT * FROM foo WHERE id={$_GET['shit']}",array()); without even testing it (if he will he gets pretty frank error message), and a malicious user will supply something like: -1 OR ':'=':' UNION SELECT ... this mechanism will be bypassed (since there is a ':' in the statement). There's no reliable way of distinguishing in the query() method, which part of SQL comes from injected variable, so I'm not even trying. So, summarizing - if someone REALLY wants, he'll make SQL injection vulnerable module anyway.
+
+
+AUTHORIZATION BYPASS
+
+Access Control Lists (authorization mechanism) are described in ACL-README. The whole thing is that this is mandatory acces control to any module, action, resource and there's no way of using module without creating proper ACL records. Of course if someone creates ACL erroneously (by a mistake/without understanding parameters meaning etc) there WILL BE AUTHORIZATION bypass, which only proofs you can have really secure software which will be defenseless if you configure it inproperly, just like leaving your bulletproff doors opened, nobody will secure you from yourself.
+
+
+SESSION HIJACKING/FIXATION AND POISONING
+
+Session poisoning is quite popular flaw since the small awareness of its existance. It's a result of the following facts
+- $_SESSION variables are just to hold application data related to the current instance, called session in general, this is needed for the data to sustain and be visible all the time between another http requests. 
+- $_SESSION contents are just a string being serialized representaion of $_SESSION superglobal. It's kept in the session file, located under session.save_path+sess_+session_id(), where usually session.save_path is the /tmp dir (some directory accessible for all users to both read and write). session_id is a string identifying session. A user is connected to session data by this value. It's usually delivered with each HTTP request in a cookie/GET variable with the session name (PHPSESSID by default).
+- usually $_SESSION contains such information as current user's identity, which is obviously a case of security, since user's identity is a base of making authorization decisions). 
+
+So, let's assume we have some user logged in with session id: XsHR1qXGHiutvBtwKLeEq6KTX77. I'll just use my user and session data from V2. Session file looks like this:
+ln|s:2:"PL";user_id|s:5:"31337";user_gid|a:1:{i:0;s:5:"31337";}
+This means that currently logged user has user_id 31337 and he's a member of the group with the same id, 31337. So, if we get somehow the session id, what actually prevents us from preparing a cookie named PHPSESSID with this value: XsHR1qXGHiutvBtwKLeEq6KTX77 for domain v2.ewil.pl, just refresh the site and be seen as that user? Usually nothing. This situation is called session hijacking (and there are several protection mechanisms in the PHP itself, but we don't focus on the webserver configuration here). Session id can be retrieved by simply listing the contents of session.save_path dir, since it's a part of the filename (of course we have to have access the server too, that's why this is very popular issue on the hosting platforms). Another way to steal the session id is to perform an XSS attack or control some webserver with referer logging enabled, if sess id is kept in the URL and so on. 
+The simplest way of preventing session hijacking is to relate the user's IP address with session id (and save it in the databse/session for instance). But the problem still exists in the situation when both attacker and victim are behind the same NAT (we could keep also checksum of the User-Agent information, but it's not so hard to guess/find  it too, so I'm still looking for a total solution for this). 
+
+Now, let's assume we'd like to change our identity to some other user, for example:
+ln|s:2:"PL";user_id|s:3:"666";user_gid|a:1:{i:0;s:3:"666";}
+ 
+The only thing we have to do is create a file with this content, name it, for instance:
+/tmp/sess_000000000000000000000000000
+create a cookie PHPSESSID=000000000000000000000000000 and voila. Now system sees us as  a user with id 666 (we're not even sure about its existance ;D). We have to just posses an account on the same machine, so we're able to write to that location with the shell command/PHP script.
+
+To mitigate these issues V2 implements the following algorithm:
+- when the session starts (it's empty,  so it has to be fresh) it calculates its sha1 checksum and saves it in the database along with the session id and IP address
+- just before terminating, after module's execution, V2 calculates the checksum again and updates this information in the database
+- when another request arrives (session isn't empty - it's continued) - checksum is calculated and compared with the one saved last time in the database, so as the IP address saved in the database is compared with current host's IP (there's also User-Agent checksum comparision to make session hijacking behind the same NAT/proxy a bit harder), if they don't match, session has to be fake/modified/hijacked, so access is not granted 
+
+There's also a term called 'session fixation', which actually refers to situation in which an attacker gives his victim an URL with already predefined session id (with PHPSESSID set to value known to him) before the person even logs in. This is a hard to perform substitute of stealing session id. So after success of such trick the rest of the process can be called session hijack, so it doesn't make any difference to the session hijacking prevention IP+browser based mechanism. Anyway, to make this less possible too (to avoid PHPSESSID to appear in the URL), V2 uses these two lines of code while starting:
+
+ini_set('session.use_trans_sid',0);
+ini_set('session.use_only_cookies',1);
+
+
+CODE EXECUTION
+
+From the attacker's point of view, there are several ways to get our own PHP/shell/other code executed on the server. This kind of bug is obviously most powerful for the attacker and most dangerous for the whole compromised system. This issue comprises:
+- shell accessing functions (shell_exec,exec,popen,passthru,system,proc_open,pcntl_exec) abuse
+- arbitrary file upload feature abuse
+- eval function calls abuse
+- require/include/require_once/include_once function calls abuse
+
+As I already stated, filtering all the input from potential PHP/system shell/shellcode/SQL code/C code/any other shit is an expensive and not 100 % accurate task, causing more problems than benefits (for instance I'd have problems with publishing articles/documentation, which would be ridiculous), I don't even try to do this. V2 itself and its two default modules (account + content) are not vulnerable to any kind of code execution issues, since there are simply no such function calls (except require calls on values previously checked against fixed, known list of permitted values and validated with simple ^\w+$ preg). And that's the method I hereby propose to all module/own framework coders. You just have to be EXTREMELY careful while using these functions. I even wanted to simply shut them down by default with some ini_set() or rename_function call, but the first is not possible in any circumstances, second is achievable only on some installations with special PECL extension, so it wouldn't be portable (shell access, eval, include*/require*). 
+
+Of course if there are some calls like: echo file_get_contents('dir/'.$_GET['filename'].'.extension'); these can be abused  to read any file (or execute if it's require*/include*), of course also beyond that dir with directory traversal:
+?filename=./../../../../../../../../../../../../../../../../../../../etc/passwd%00 
+So, directory traversal bypasses fixed 'dir/' prefix in this example, NULL byte (%00) causes the fixed suffix '.extension' to be ignored, resulting in the ability to give any path we like.
+
+There are more functions giving the ability to read some file, like fopen, file, show_source, highlight_file and so on (and these lead to information disclosure, while require*/include* lead directly to code execution, giving the ability to read any file at the same time (it's becuase PHP works this way, everything that's not PHP code will be just displayed)).
+
+The best approach is to run them only against constants or variables checked against fixed list of known values, for example:
+require('lib/http_request.class.php');
+
+if(in_array($_GET['file'],array('mod1','mod2','mod3')) include('dir/'.$_GET['file'].'.php');
+We can also previously validate such variable with this regular expression: ^\w+$
+If we open/include a lots of files in our code, it's good to consider creating our own overlay for safe files inclusion/opening  with such check build in and use it all the time instead of standard fopen/include calls. 
+
+When it comes to file uploads, several issues appear actually.
+First, there is a threat that someone will trick us and upload his own PHP code instead of some graphics for example, aware of the fact it is going to be places under, let's say, uploads/avatars/ directory, he could simply run http://v2.ewil.pl/uploads/avatars/mycode.php and compromise the application.
+Other issues include tricking our app to use file that's not actually uploaded to try to make our script to copy it from the the location not available through the web directly, so he could simply download it, like /etc/passwd.
+Getting out of the current directory can be achieved by using so called directory traversal, by preceding the path with a set of ../ upper directory references.
+There is also well known issue with using AddHandler apache's directive for PHP scripts execution. This causes that not only files with extension .php are executed by the parser, but rather ALL FILES which filenames only CONTAIN '.php', so filtering the extension only is not sufficient, since an attacker could place a PHP script under i.am.coding.php.for.fun.jpg and get it executed as well. Now, let's see how V2 prevents from these to happen.
+
+First of all, all $_FILES are filtered by sanitize_input() method (the same which neutralizes XSS/HTML injection). To not get unset, they have to comply with the following rules:
+- there is only one dimension in the $_FILES[INPUT_NAME] allowed, so if this variable is an array, it will be unset
+- filenames can contain only A-Za-z0-9- characters and maximum one extension (so all directory traversal or any other tricky shit in the filename), it also cannot be longer than MAX_FILENAME_LENGTH configuration option (200 chars by default), it can contain maximum one extension
+- they have to pass is_uploaded_file() function check
+- all files after upload are accessible only through the V2 engine, with the use of special method dedicated for this purpose, so if someone's simply not allowed to access by the ACL record, he will be denied, and all direct requests to uploads/ directory are denied by the .htaccess rules, so even uploading PHP scripts is not a direct threat
+- uploads should be handled by the lib/uploader.class.php  (now it only supports graphics, which are easy to validate with additional checks thanks to GD set of functions), which moves them to uploads/UID/ directory, which is not directly accessible as stated above 
+
+
+CROSS SITE REQUEST FORGERY
+
+This is another not well known issue, since it requires victim's cooperation to take place. Neverheless we have to eliminate this one too. The whole trick uses the fact that the web browser can have multiple windows/tabs opened simultaneously and it usually does. Since URL-s contain parameters interpreted by the web application as commands (such as $this->REQ->get('action') in V2), creating some website with hidden iframe/image/any element with src="http://v2.ewil.pl/module,do_something" and delivering link to the currently logged user will result in executing such request from the second site without user's knowledge and since he's already logged and the request points to the right domain, his cookies will work as well, so the action do_something takes places as it was requested by the user intentionally. There are two approaches to this issue. First is to check if HTTP_REFERER value looks suspicious, if it does, cancel action's execution. Second is to automatically add special, unpredictable, randomly generated string parameter to each URL. Since we use our controller for both links generation and interpretation it's not hard to implement, and unfortunately we have to do this since in many cases users have HTTP_REFERER disabled in their browsers or it's blocked by some proxy for privacy protection reasons for instance, so just using a referer woudn't be an ultimate securying mechanism. I thought using some 'secret' codes  in the website's content is also easy to bypass by just creating an iframe with src pointed to the attacked application with administration panel, grabbing its content with javascript and pulling out the secret code with regular expression, then performing generated correct URL request by bypassing same origin restriction with something like $(document).append('<img src="http://v2.ewil.pl/module,do_something,,,secret_code">'), but this won't work on up to date browsers for two reasons:
+- there's no easy, direct access between frames contents from different domains
+- such same origin bypass doesn't work
+I'd like to avoid adding those ugly codes to URL-s, but it looks like I don't have a choice. Tell me if you have some other ideas.
+
+
+DENIAL OF SERVICE
+
+Denial of Service from the web-application's point of view can be one of the following:
+- putting some malicious HTML/JavaScript content which gets appended to the outputted content and infects the users/makes usage of the web application impossible (just random shit like <script>for(i=0;i<31337;i++) alert(':D')</script> or <script>document.location.href="http://my.blackhole.pa.ck/"</script>, or simply some element which visually overlaps others making it impossible to click somewhere), V2 neutralizes this threat with its sanitize_input() method,
+- putting in the database characters messing up the XML syntax when sent as the output in this format, affects AJAX applications (this should be avoided with output filtering when engine detects AJAX request, currently it's not implemented)
+- flooding the database with junk - the best thing to do is to use captcha for authorizing each of such operations (it's not implemented in V2 currently, but it's not a problem thanks to the centralized validation mechanism, it will be in the next revision), look at Automated information grabbing in INFORMATION DISCLOSURE for other concepts
+- making it impossible to use the application in the normal way (because the websites content gets too heavy to load into the browser without freeze/SQL statement takes too long) - currently there are is no mechanism for detecting, let's say, a few-thousand characters long comment content with no single space, which would break the design a bit if it's not overflowed in CSS, these are minor things and I'm not feeling like implementing right now.
+- exhausting the transfer limit for the account if it's hosted on some poor conditions - again, look at Automated information grabbing in INFORMATION DISCLOSURE section
+- causing account to be blocked, session to be destroyed in the result of abuse of some protection mechamisms (Murphy's law :D)
+
+
+
+INFORMATION DISCLOSURE
+
+This is the widest group of issues. Information disclosure involves all situations, where some information is technically available to someone despite the fact that it's not supposed to. Of course, sticking to this definition we should call almost all data security problems as information disclosures (isn't SQL injection with option to fetch the whole database an information disclosure?), but let's just throw in here all the situations matching the definition except those comprised by any of previously covered categories. So, I figured out few other problems that fit here. Let's cover them all, one after another.
+
+Accessing information from the database
+To prevent unwanted users from seeing our resources we use ACL-s. By default, only the owner has a control over the reource (news created, his own profile data and so on). Additionally, attributes can use "private" option defined in the entities/$MODULE[_$ACTION].xml file. "Protected" (accessible only for those matching addional, special ACL dedicated for attributes) is an option planned for the nex revision. To protect the attributes from being read/enumerated with other methods, such as searching/sorting/editing, there are other options to set for each attribute (see FORMS-LISTERS-ENTITIES-README for the gory details). If you don't use predefined CRUD methods and entities mechanism, you have to take care about those details yourself (after ACL permitting a user to execute current action the user will see all the private attributes as a result of executing your action, if you will code it this way (SELECT * FROM table => fetch -> echo), be warned).
+
+Files Access  
+Since files uploaded by users are obviously a data, they have to be protected with the same strength as information held in the database. That's why leaving files accessible directly with requests (http://v2.ewil.pl/uploads/31337/avatar.jpg for instance), even when their names are not easy to predict, is a potential information disclosure. What's more, it's quite often to just put some documents directly to public_html dirs with assumption, that the only person who will access this file, is the person who we published this file for. The truth is that if we'd just used some dictionary with common words, compared with common extensions (many web scanners as nicto have such ability, nothing unusual) we find some files that were not intended for us to read. Also very common ommision made by the webdevs is to forget about disabling creation of auto-copies on save. This leads to creation/upload of files such as config.php~ (suffixed with "~" usually), which are available for download, all the abuser has to do is to try it out. 
+This second situation is not directly related to V2 as an web app framework, but since we're already using .htaccess file for nice URL-s configuration, why not to use it for securying all the directory tree with the same assumptions we secure everything else: everything is denied by default, some exceptions are defined.  This also introduces additional security layer from arbitrary file upload threat, which would lead to code execution.
+That's why:
+- all files uploaded by the user are accessible through the special file_download V2 module (http://v2.ewil.pl/file,download,666,,,,,1.html where 666 is the file's id)  - this simplifies the process so much, there's actually no need to create any ACL record for this to work as it should by default (resource's owner has full control, everyone else is denied unless permitted with some additional ACL record)
+- all requests to files other than V2 directory tree used directly as the web resources (doc/css/img/js/templates/index.php) are DENIED, here's the htaccess file contents:
+ 
+<Files ".ht">
+        Order deny,allow
+        Deny from all
+</Files>
+RewriteEngine  On
+
+## requests generated by controller are rewritten to engine, that's it (regardless of the file's existance)
+RewriteCond %{REQUEST_URI} ^/index\.(xml|php|html|xhtml)$
+RewriteRule .* index.php [L]
+RewriteCond %{REQUEST_URI} ^/(.+?)\.(xml|php|html|xhtml)$
+RewriteRule .* index.php?%1 [L]
+
+## requests not matching our specific rules are rewritten and therefore blocked
+RewriteCond %{REQUEST_URI} !^/img/([\w-]+/)*[\w-]+\.(jpg|jpeg|png|ico|svg|gif|tiff)$
+RewriteCond %{REQUEST_URI} !^/js/[\w-]+\.js$
+RewriteCond %{REQUEST_URI} !^/templates/[\w-]+\.tpl$
+RewriteCond %{REQUEST_URI} !^/css/[\w-]+\.css$
+RewriteCond %{REQUEST_URI} !^/doc/([\w-]+)?$
+# RewriteCond %{REQUEST_URI} !^/pub ## pub dir, if needed (warning, all extensions are allowed, also PHP code)
+RewriteCond %{REQUEST_URI} !^/favicon\.(ico|png)$
+RewriteCond %{REQUEST_URI} !^/$
+RewriteRule .* .htvrequestmodified
+
+So, everything not being a real file and matching to whatever.xml and so on will be redirected to index.php. So far, so good. Everything under fixed set of directories with proper extension according to the directory's application is also fine (img/,CSS,JS,HTML,doc/ and other crap). All real files named index.(xml|php|html|xhtml) ARE ALSO ACCESSIBLE, but you shouldn't need to create such ones. Also default "" empty URI is fine (which will lead you to the file set as Directory Index, usually index.(php|xml|html|xhtml)).
+Now, everything else is rewritten to .htvrequestmodified, a file which doesn't exist, and even if it would, it will be denied cause of the .ht prefix. This approach (mod_rewrite use) has another benefit. Even the information that some file/directory exists is not revealed, since it's not even checked, just rewritten to a file that doesn't, so there's no way to enumerate filenames in the Document Root.
+ 
+
+Login/e-mail address/other private attributes enumeration
+We have to be very careful when coding various error handling in our application when we want to stick strictly to the security policy. For instance, we can make the e-mail address private, but it's actually not, if we can simply check if a user with this login/e-mail exists if logging/registration mechanism will reveal for us this information in its error messages. This is another case when no engine-level ultimate security mechanism can cover this fully, so chances for such information disclosure are growing. I've made myself fake error reports in my account module and engine to avoid such flaw, but someone could try to expoit this behaviorally, by just analysing time took by the application to execute in different situations which only appear to have the same result. Well, I'm aware about this, I just decided fake error messages are sufficient in this case.  
+
+
+Automated information grabbing
+- e-mail/phone number/other sensitive data masking - this can be imlpemented with JavaScript, making it hard enough to reproduce to discourage bot coder, bot not impossible at all
+- automated content retrieving (PK enumeration, automated requests) - of course we could just try to detect such actions with our ACL logging mechanism, detecting suspicious looking content or repeating records from the same anonymous user/IP, this is fine for making it hard to any random-bot/wget -r to abuse our webapp, but not making it impossible (it's not hard to introduce random delay between another requests and our detector is bypassed).
+Currently not implemented cause of the lack of time and will. 

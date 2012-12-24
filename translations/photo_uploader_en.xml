@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_file ln="EN" module="uploader">
+	<msg type="info" id="UPLOAD_SUCCESFUL">Upload succesful.</msg>
+	<msg type="error" id="INVALID_REFERENCE">Invalid request.</msg>
+	<msg type="error" id="DELETE_FAILED">Deleting failed.</msg>
+	<msg type="error" id="INVALID_FILENAME">Suspicious filename detected.</msg>
+	<msg type="error" id="UNSUPPORTED_FILE_EXTENSION">Unknown extension.</msg>
+	<msg type="error" id="UNSUPPORTED_FILE_FORMAT">Suspicious file format.</msg>
+	<msg type="error" id="MAX_PHOTOS_REACHED">With this configuration you can upload only one picture.</msg>
+	<msg type="error" id="MOVE_UPLOADED_FILE_FAILED">Could not save file, check permissions on the server side.</msg>
+	<msg type="error" id="NO_PICTURE">File not found.</msg>
+	<msg type="error" id="INVALID_PHOTO_UPLOADER_CONFIGURATION">Invalid photo-uploader configuration (see doc/UPLOADER-README).</msg>
+</message_file>

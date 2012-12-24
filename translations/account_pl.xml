@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<message_file ln="PL" module="account">
+	<msg type="info" id="PASSWORD_CRITERIA">Hasło musi być dłuższe niż 4 znaki.</msg>
+	<msg type="info" id="EMAIL_OBLIGATORY">Musisz podac poprawny adres email!</msg>
+	<msg type="error" id="PASSWORDS_MATCH_ERR">Obydwa hasła muszą się zgadzać!</msg>
+	<msg type="error" id="REGISTER_FAILED">Nie udało się zarejestrować konta, błąd w bazie danych! Zgłoś to administracji!</msg>
+	<msg type="info" id="REGISTER_SUCCESFUL">Gratulujemy! Rejestracja przebiegła pomyślnie! Gdy ktoś z adminów aktywuje Twoje konto, będziesz mógł się zalogować.</msg>
+	<msg type="info" id="ALREADY_LOGGED">Jesteś już zalogowany.</msg>
+	<msg type="info" id="EMAIL_INFO">Wpisz poprawny adres e-mail.</msg>
+	<msg type="info" id="USERNAME_INFO">Twoja wyświetlana publicznie nazwa użytkownika</msg>
+	<msg type="error" id="USERNAME_ERROR">Nazwa użytkownika może zawierać maksymalnie 50 znaków.</msg>
+	<msg type="error" id="USER_INFO_ERROR">Opis może zawierać maksymalnie 1500 znaków.</msg>
+	<msg type="info" id="USER_INFO_INFO">Opis jest nieobowiązkowym polem na dodatkowe informacje o użytkowniku, może zawierać do 500 znaków.</msg>
+	<msg type="info" id="AVATAR_ENTICE_INFO">Wyślij awatara</msg>
+	<msg type="info" id="SIGNATURE">Opcjonalne informacje o użytkowniku</msg>
+	<msg type="info" id="USER_NAME">Nazwa użytkownika</msg>
+	<msg type="info" id="ACCOUNT_MOD">Moduł profilu użytkownika</msg>
+	<msg type="info" id="USER_LAST_LOGGED_AT">Data ostatniego zalogowania</msg>
+	<msg type="info" id="REGISTER_MAIL_TOPIC">Rejestracja na </msg>
+	<msg type="info" id="THIS_LINK">poniższy link</msg>
+	<msg type="info" id="REGISTRATION_SUCCESFUL_MAIL_SENT">Gratulacje! Rejestracja przebiegła pomyślnie, na podany adres e-mail wysłano link aktywacyjny. W przypadku problemów prosimy o kontakt.</msg>
+	<msg type="error" id="TOKEN_ACTIVATION_FAILED">Aktywacja konta nieudana, nieprawidłowy token!</msg>
+	<msg type="info" id="TOKEN_ACTIVATION_SUCCESFUL">Aktywacja konta przebiegła pomyślnie! Możesz się logować.</msg>
+	<msg type="info" id="USRLIST">Lista użytkowników</msg>
+	<msg type="info" id="E_MAIL">adres e-mail</msg>
+</message_file>
