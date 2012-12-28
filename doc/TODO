@@ -5,6 +5,7 @@ TODO
 [CURRENT]
 - file_download special module [DONE, NOT TESTED]
 - upload class (code + documentation)
+- additionally secure data from files and database (since .XML contents are trusted source of data, for instance DEFAULT_MOD could lead to directory traversal and LFI, however it would be easier to just overwrite the code itself, it's rather server configuration issue than V2, however it would be nice to secure it
 - security audit made by someone else (i'll just offer some money to anyone, who finds a bug (XSS,SQL,CODE EXECUTION,CSRF!,SESSION_POISONING), i have a big chance to audit it for free :D) (once again check everything, write unit tests?)
 
 [MAJOR]
